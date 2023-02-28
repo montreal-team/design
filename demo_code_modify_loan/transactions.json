@@ -1,0 +1,145 @@
+[
+  {
+    "date": {
+      "$numberLong": "1674709200000"
+    },
+    "status": "In progress",
+    "installAmount": 39.1,
+    "balance": 416.04931741478737,
+    "interest": 2.5242551549108496,
+    "orderNb": 1,
+	"paymentFrequency": "1w",
+    "deleted": false
+  },
+  {
+    "date": {
+      "$numberLong": "1675314000000"
+    },
+    "status": "In progress",
+    "installAmount": 39.1,
+    "balance": 379.26959245421597,
+    "interest": 2.320275039428622,
+    "orderNb": 2,
+	"paymentFrequency": "1w",
+    "deleted": false
+  },
+  {
+    "date": {
+      "$numberLong": "1675918800000"
+    },
+    "status": "In progress",
+    "installAmount": 39.1,
+    "balance": 342.2847497967491,
+    "interest": 2.115157342533127,
+    "orderNb": 3,
+	"paymentFrequency": "1w",
+    "deleted": false
+  },
+  {
+    "date": {
+      "$numberLong": "1676523600000"
+    },
+    "status": "In progress",
+    "installAmount": 39.1,
+    "balance": 305.09364551676947,
+    "interest": 1.9088957200203314,
+    "orderNb": 4,
+	"paymentFrequency": "1w",
+    "deleted": false
+  },
+  {
+    "date": {
+      "$numberLong": "1677128400000"
+    },
+    "status": "In progress",
+    "installAmount": 39.1,
+    "balance": 267.69512930907456,
+    "interest": 1.7014837923050603,
+    "orderNb": 5,
+	"paymentFrequency": "1w",
+    "deleted": false
+  },
+  {
+    "date": {
+      "$numberLong": "1677733200000"
+    },
+    "status": "In progress",
+    "installAmount": 39.1,
+    "balance": 230.08804445329824,
+    "interest": 1.492915144223685,
+    "orderNb": 6,
+	"paymentFrequency": "1w",
+    "deleted": false
+  },
+  {
+    "date": {
+      "$numberLong": "1678338000000"
+    },
+    "status": "In progress",
+    "installAmount": 39.1,
+    "balance": 192.27122777813395,
+    "interest": 1.2831833248357016,
+    "orderNb": 7,
+	"paymentFrequency": "1w",
+    "deleted": false
+  },
+  {
+    "date": {
+      "$numberLong": "1678942800000"
+    },
+    "status": "In progress",
+    "installAmount": 39.1,
+    "balance": 154.24350962535817,
+    "interest": 1.0722818472242084,
+    "orderNb": 8,
+	"paymentFrequency": "1w",
+    "deleted": false
+  },
+  {
+    "date": {
+      "$numberLong": "1679547600000"
+    },
+    "status": "In progress",
+    "installAmount": 39.1,
+    "balance": 116.00371381365343,
+    "interest": 0.8602041882952667,
+    "orderNb": 9,
+	"paymentFrequency": "1w",
+    "deleted": false
+  },
+  {
+    "date": {
+      "$numberLong": "1680152400000"
+    },
+    "status": "In progress",
+    "installAmount": 39.1,
+    "balance": 77.55065760222958,
+    "interest": 0.6469437885761441,
+    "orderNb": 10,
+	"paymentFrequency": "1w",
+    "deleted": false
+  },
+  {
+    "date": {
+      "$numberLong": "1680757200000"
+    },
+    "status": "In progress",
+    "installAmount": 39.1,
+    "balance": 38.88315165424201,
+    "interest": 0.4324940520124341,
+    "orderNb": 11,
+	"paymentFrequency": "1w",
+    "deleted": false
+  },
+  {
+    "date": {
+      "$numberLong": "1681362000000"
+    },
+    "status": "In progress",
+    "installAmount": 39.1,
+    "balance": 6.0538241086760536e-12,
+    "interest": 0.216848345764042,
+    "orderNb": 12,
+	"paymentFrequency": "1w",
+    "deleted": false
+}]
