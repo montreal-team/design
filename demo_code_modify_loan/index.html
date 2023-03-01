@@ -1,70 +1,95 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DEMO MODIFY LOAN CODE</title>
-    <script type="module" src="./main.js"></script>
-</head>
-<body>
-    <div>
-        <h1>Modify loan</h1>
-        <div>
-            <h3>Change frequency</h3>
-            <div>
-                <label for="selectPayment">Select payment</label>
-                <input id="selectPayment" type="text">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>DEMO MODIFY LOAN CODE</title>
+        <script type="module" src="./main.js"></script>
+        <style>
+            .body {
+                display: flex;
+            }
+            .action {
+                display: flex;
+                flex-direction: column;
+                width: 100%;
+            }
+            #listTransaction {
+                display: flex;
+                width: 100%;
+            }
+            td,
+            th {
+                width: 100%;
+                padding: 0 12px;
+                border: 1px solid black;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="body">
+            <div class="action">
+                <div>
+                    <h1>Modify loan</h1>
+                    <div>
+                        <h3>Change frequency</h3>
+                        <div>
+                            <label for="selectPayment">Select payment</label>
+                            <input id="selectPayment" type="text" />
+                        </div>
+                        <div>
+                            <label for="selectFrequency">Select frequency</label>
+                            <input id="selectFrequency" type="text" />
+                        </div>
+                        <div>
+                            <label for="startDate">Start date</label>
+                            <input id="startDate" type="text" />
+                        </div>
+                        <button>Change frequency</button>
+                    </div>
+                    <div>
+                        <h3>Change payment</h3>
+                        <div>
+                            <label for="paymentAmount">Start date</label>
+                            <input id="paymentAmount" type="text" />
+                        </div>
+                        <div>
+                            <label for="startDate">Start date</label>
+                            <input id="startDate" type="text" />
+                        </div>
+                        <button>Change payment</button>
+                    </div>
+                </div>
+                <div>
+                    <h1>Add manual payment</h1>
+                    <label for="manualPayment">Input manual payment</label>
+                    <input id="manualPayment" type="text" />
+                    <button>Add new manual payment</button>
+                </div>
+                <div>
+                    <h1>Add new rebate</h1>
+                    <label for="rebate">Input new rebate</label>
+                    <input id="rebate" type="text" />
+                    <button>Add new rebate</button>
+                </div>
+                <div>
+                    <h1>Modify payment</h1>
+                    <label for="modifyPayment">Modify payment</label>
+                    <input id="modifyPayment" />
+                    <button>Modify payment</button>
+                </div>
+                <div>
+                    <h1>Defer payment</h1>
+                    <label for="selectType">Defer payment</label>
+                    <select id="selectType">
+                        <option value="chargeImmediate">Charge immediate</option>
+                        <option value="chargeLater">Charge later</option>
+                    </select>
+                    <button>Defer payment</button>
+                </div>
             </div>
-            <div>
-                <label for="selectFrequency">Select frequency</label>
-                <input id="selectFrequency" type="text">
-            </div>
-            <div>
-                <label for="startDate">Start date</label>
-                <input id="startDate" type="text">
-            </div>
-            <button>Change frequency</button>
+            <table id="listTransaction"></table>
         </div>
-        <div>
-            <h3>Change payment</h3>
-            <div>
-                <label for="paymentAmount">Start date</label>
-                <input id="paymentAmount" type="text">
-            </div>
-            <div>
-                <label for="startDate">Start date</label>
-                <input id="startDate" type="text">
-            </div>
-            <button>Change payment</button>
-        </div>
-    </div>
-    <div>
-        <h1>Add manual payment</h1>
-        <label for="manualPayment">Input manual payment</label>
-        <input id="manualPayment" type="text">
-        <button>Add new manual payment</button>
-    </div>
-    <div>
-        <h1>Add new rebate</h1>
-        <label for="rebate">Input new rebate</label>
-        <input id="rebate" type="text">
-        <button>Add new rebate</button>
-    </div>
-    <div>
-        <h1>Modify payment</h1>
-        <label for="modifyPayment">Modify payment</label>
-        <input id="modifyPayment">
-        <button>Modify payment</button>
-    </div>
-    <div>
-        <h1>Defer payment</h1>
-        <label for="selectType">Defer payment</label>
-        <select id="selectType">
-            <option value="chargeImmediate">Charge immediate</option>
-            <option value="chargeLater">Charge later</option>
-        </select>
-        <button>Defer payment</button>
-    </div>
-</body>
+    </body>
 </html>
