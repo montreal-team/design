@@ -63,15 +63,21 @@
                 </div>
                 <div>
                     <h1>Add manual payment</h1>
-                    <label for="manualPayment">Input manual payment</label>
-                    <input id="manualPayment" type="text" />
-                    <button>Add new manual payment</button>
+                    <div>
+                        <label for="manualPaymentAmount">Input manual payment amount</label>
+                        <input id="manualPaymentAmount" type="text" />
+                    </div>
+                    <div>
+                        <label for="manualPaymentDate">Input manual payment date</label>
+                        <input id="manualPaymentDate" type="text" />
+                    </div>
+                    <button id="newManualPaymentBtn">Add new manual payment</button>
                 </div>
                 <div>
                     <h1>Add new rebate</h1>
                     <label for="rebate">Input new rebate</label>
                     <input id="rebate" type="text" />
-                    <button>Add new rebate</button>
+                    <button id="newRebateBtn">Add new rebate</button>
                 </div>
                 <div>
                     <h1>Modify payment</h1>
@@ -89,7 +95,11 @@
                     <button>Defer payment</button>
                 </div>
             </div>
-            <table id="listTransaction"></table>
+            <div id="result">
+                <table id="listTransaction"></table>
+                <table id="listTransactionNew"></table>
+                <button id="removeListTransactionNew">Remove new list of transaction</button>
+            </div>
         </div>
     </body>
 </html>

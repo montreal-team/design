@@ -7,7 +7,7 @@
         "interest": 1.936768661056918,
         "orderNb": 1,
         "description": "",
-        "deleted": true
+        "deleted": false
     },
     {
         "date": 1681448400000,
@@ -17,7 +17,7 @@
         "interest": 1.7802621785897355,
         "orderNb": 2,
         "description": "",
-        "deleted": true
+        "deleted": false
     },
     {
         "date": 1682053200000,
@@ -27,7 +27,7 @@
         "interest": 1.6228828715087935,
         "orderNb": 3,
         "description": "",
-        "deleted": true
+        "deleted": false
     },
     {
         "date": 1682658000000,
@@ -37,7 +37,7 @@
         "interest": 1.464625872138362,
         "orderNb": 4,
         "description": "",
-        "deleted": true
+        "deleted": false
     },
     {
         "date": 1683262800000,
@@ -47,7 +47,7 @@
         "interest": 1.3054862856560567,
         "orderNb": 5,
         "description": "",
-        "deleted": true
+        "deleted": false
     },
     {
         "date": 1683867600000,
@@ -57,7 +57,7 @@
         "interest": 1.1454591899414461,
         "orderNb": 6,
         "description": "",
-        "deleted": true
+        "deleted": false
     },
     {
         "date": 1684472400000,
@@ -67,7 +67,7 @@
         "interest": 0.984539635423812,
         "orderNb": 7,
         "description": "",
-        "deleted": true
+        "deleted": false
     },
     {
         "date": 1685077200000,
@@ -77,7 +77,7 @@
         "interest": 0.8227226449290601,
         "orderNb": 8,
         "description": "",
-        "deleted": true
+        "deleted": false
     },
     {
         "date": 1685682000000,
@@ -87,7 +87,7 @@
         "interest": 0.6600032135257798,
         "orderNb": 9,
         "description": "",
-        "deleted": true
+        "deleted": false
     },
     {
         "date": 1686286800000,
@@ -97,7 +97,7 @@
         "interest": 0.4963763083704429,
         "orderNb": 10,
         "description": "",
-        "deleted": true
+        "deleted": false
     },
     {
         "date": 1686891600000,
@@ -107,7 +107,7 @@
         "interest": 0.3318368685517396,
         "orderNb": 11,
         "description": "",
-        "deleted": true
+        "deleted": false
     },
     {
         "date": 1687496400000,
@@ -117,6 +117,6 @@
         "interest": 0.16637980493404741,
         "orderNb": 12,
         "description": "",
-        "deleted": true
+        "deleted": false
     }
 ]
