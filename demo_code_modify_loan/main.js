@@ -1,6 +1,3 @@
-import transaction from "./transactions.json" assert {type: 'json'};
-import { modifyLoan } from "./module-modify/modifyLoan.js";
+import { showListTransaction } from "./module-modify/newManualPayment_rebate.js"
 
-let fakeDB = transaction
-console.log(fakeDB)
-modifyLoan()
+showListTransaction()

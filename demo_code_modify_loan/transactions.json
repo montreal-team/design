@@ -1,145 +1,122 @@
 [
-  {
-    "date": {
-      "$numberLong": "1674709200000"
+    {
+        "date": 1681102800000,
+        "status": "pending",
+        "installAmount": 30,
+        "balance": 319.21942512643534,
+        "interest": 1.936768661056918,
+        "orderNb": 1,
+        "description": "",
+        "deleted": true
     },
-    "status": "In progress",
-    "installAmount": 39.1,
-    "balance": 416.04931741478737,
-    "interest": 2.5242551549108496,
-    "orderNb": 1,
-	"paymentFrequency": "1w",
-    "deleted": false
-  },
-  {
-    "date": {
-      "$numberLong": "1675314000000"
+    {
+        "date": 1681448400000,
+        "status": "pending",
+        "installAmount": 30,
+        "balance": 290.9996873050251,
+        "interest": 1.7802621785897355,
+        "orderNb": 2,
+        "description": "",
+        "deleted": true
     },
-    "status": "In progress",
-    "installAmount": 39.1,
-    "balance": 379.26959245421597,
-    "interest": 2.320275039428622,
-    "orderNb": 2,
-	"paymentFrequency": "1w",
-    "deleted": false
-  },
-  {
-    "date": {
-      "$numberLong": "1675918800000"
+    {
+        "date": 1682053200000,
+        "status": "pending",
+        "installAmount": 30,
+        "balance": 262.6225701765339,
+        "interest": 1.6228828715087935,
+        "orderNb": 3,
+        "description": "",
+        "deleted": true
     },
-    "status": "In progress",
-    "installAmount": 39.1,
-    "balance": 342.2847497967491,
-    "interest": 2.115157342533127,
-    "orderNb": 3,
-	"paymentFrequency": "1w",
-    "deleted": false
-  },
-  {
-    "date": {
-      "$numberLong": "1676523600000"
+    {
+        "date": 1682658000000,
+        "status": "pending",
+        "installAmount": 30,
+        "balance": 234.08719604867224,
+        "interest": 1.464625872138362,
+        "orderNb": 4,
+        "description": "",
+        "deleted": true
     },
-    "status": "In progress",
-    "installAmount": 39.1,
-    "balance": 305.09364551676947,
-    "interest": 1.9088957200203314,
-    "orderNb": 4,
-	"paymentFrequency": "1w",
-    "deleted": false
-  },
-  {
-    "date": {
-      "$numberLong": "1677128400000"
+    {
+        "date": 1683262800000,
+        "status": "pending",
+        "installAmount": 30,
+        "balance": 205.3926823343283,
+        "interest": 1.3054862856560567,
+        "orderNb": 5,
+        "description": "",
+        "deleted": true
     },
-    "status": "In progress",
-    "installAmount": 39.1,
-    "balance": 267.69512930907456,
-    "interest": 1.7014837923050603,
-    "orderNb": 5,
-	"paymentFrequency": "1w",
-    "deleted": false
-  },
-  {
-    "date": {
-      "$numberLong": "1677733200000"
+    {
+        "date": 1683867600000,
+        "status": "pending",
+        "installAmount": 30,
+        "balance": 176.53814152426975,
+        "interest": 1.1454591899414461,
+        "orderNb": 6,
+        "description": "",
+        "deleted": true
     },
-    "status": "In progress",
-    "installAmount": 39.1,
-    "balance": 230.08804445329824,
-    "interest": 1.492915144223685,
-    "orderNb": 6,
-	"paymentFrequency": "1w",
-    "deleted": false
-  },
-  {
-    "date": {
-      "$numberLong": "1678338000000"
+    {
+        "date": 1684472400000,
+        "status": "pending",
+        "installAmount": 30,
+        "balance": 147.52268115969355,
+        "interest": 0.984539635423812,
+        "orderNb": 7,
+        "description": "",
+        "deleted": true
     },
-    "status": "In progress",
-    "installAmount": 39.1,
-    "balance": 192.27122777813395,
-    "interest": 1.2831833248357016,
-    "orderNb": 7,
-	"paymentFrequency": "1w",
-    "deleted": false
-  },
-  {
-    "date": {
-      "$numberLong": "1678942800000"
+    {
+        "date": 1685077200000,
+        "status": "pending",
+        "installAmount": 30,
+        "balance": 118.3454038046226,
+        "interest": 0.8227226449290601,
+        "orderNb": 8,
+        "description": "",
+        "deleted": true
     },
-    "status": "In progress",
-    "installAmount": 39.1,
-    "balance": 154.24350962535817,
-    "interest": 1.0722818472242084,
-    "orderNb": 8,
-	"paymentFrequency": "1w",
-    "deleted": false
-  },
-  {
-    "date": {
-      "$numberLong": "1679547600000"
+    {
+        "date": 1685682000000,
+        "status": "pending",
+        "installAmount": 30,
+        "balance": 89.00540701814839,
+        "interest": 0.6600032135257798,
+        "orderNb": 9,
+        "description": "",
+        "deleted": true
     },
-    "status": "In progress",
-    "installAmount": 39.1,
-    "balance": 116.00371381365343,
-    "interest": 0.8602041882952667,
-    "orderNb": 9,
-	"paymentFrequency": "1w",
-    "deleted": false
-  },
-  {
-    "date": {
-      "$numberLong": "1680152400000"
+    {
+        "date": 1686286800000,
+        "status": "pending",
+        "installAmount": 30,
+        "balance": 59.50178332651883,
+        "interest": 0.4963763083704429,
+        "orderNb": 10,
+        "description": "",
+        "deleted": true
     },
-    "status": "In progress",
-    "installAmount": 39.1,
-    "balance": 77.55065760222958,
-    "interest": 0.6469437885761441,
-    "orderNb": 10,
-	"paymentFrequency": "1w",
-    "deleted": false
-  },
-  {
-    "date": {
-      "$numberLong": "1680757200000"
+    {
+        "date": 1686891600000,
+        "status": "pending",
+        "installAmount": 30,
+        "balance": 29.833620195070573,
+        "interest": 0.3318368685517396,
+        "orderNb": 11,
+        "description": "",
+        "deleted": true
     },
-    "status": "In progress",
-    "installAmount": 39.1,
-    "balance": 38.88315165424201,
-    "interest": 0.4324940520124341,
-    "orderNb": 11,
-	"paymentFrequency": "1w",
-    "deleted": false
-  },
-  {
-    "date": {
-      "$numberLong": "1681362000000"
-    },
-    "status": "In progress",
-    "installAmount": 39.1,
-    "balance": 6.0538241086760536e-12,
-    "interest": 0.216848345764042,
-    "orderNb": 12,
-	"paymentFrequency": "1w",
-    "deleted": false
-}]
+    {
+        "date": 1687496400000,
+        "status": "pending",
+        "installAmount": 30,
+        "balance": 4.618527782440651e-12,
+        "interest": 0.16637980493404741,
+        "orderNb": 12,
+        "description": "",
+        "deleted": true
+    }
+]
