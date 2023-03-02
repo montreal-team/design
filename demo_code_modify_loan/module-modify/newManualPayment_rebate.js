@@ -43,7 +43,7 @@ const showListTransaction = (array, element) => {
         <tr>
             <td>#00000${e.orderNb}</td>
             <td>${showUnixToDate(e.date)}</td>
-            <td>${e.installAmount}</td>
+            <td>${e.installAmount.toFixed(2)}</td>
             <td>${e.interest.toFixed(2)}</td>
             <td>${e.balance.toFixed(2)}</td>
             <td>${e.status}</td>
@@ -66,57 +66,118 @@ const timeReference = {
     "2byM": 14,
 }
 
-const addNewManualPayment = () => {
-    let listTransaction = listTransactionOrigin
-    let numberOfPayment = listTransaction.length
+const getInsertedPaymentData = (arrOfTransaction, newPaymentAmt, newPaymentDate, statusOfPayment, contractFrequency) => {
+    let listTransaction = arrOfTransaction
+    let singleInterest = 0.29/frequency[contractFrequency]
     
-    let listTransactionDate = []
+    let orderNb
+    let newPaymentInterest
+    let currCapital
+    let newPaymentBalance
+    let currBalance
+
+    let newPaymentDateObj = newPaymentDate
+    let listTransactionDate = [newPaymentDateObj]
+    listTransaction.forEach((e) => {
+        listTransactionDate.push(e.date)
+    })
+    listTransactionDate.sort((a, b) => {
+        if (a > b) {
+            return 1
+        } else {
+            return -1
+        }
+    })
+
+    orderNb = listTransactionDate.indexOf(newPaymentDateObj) + 1
+    currBalance = listTransaction[orderNb - 2].balance
+    newPaymentInterest = currBalance * singleInterest
+    currCapital = newPaymentAmt - newPaymentInterest
+    newPaymentBalance = currBalance - currCapital
+
+    return {
+        date: newPaymentDate,
+        orderNb: orderNb,
+        installAmount: newPaymentAmt,
+        interest: newPaymentInterest,
+        balance: newPaymentBalance,
+        status: statusOfPayment,
+    }
+}
+
+const splitArray = (array, condtFunc) => {
+    let [pass, fail] = array.reduce(([pass, fail], e) => {
+        return condtFunc(e) ? [[...pass, e], fail] : [pass, [...fail, e]]
+    }, [[], []])
+    return {
+        pass: pass,
+        fail: fail
+    }
+}
+
+const recalculateTransactions = (arrOfTransaction, insertedPayment, contractFrequency) => {
+    let listTransaction = arrOfTransaction
+    let singleInterest = 0.29/frequency[contractFrequency]
+
+    let currDate = insertedPayment.date
+    let currOrderNb = insertedPayment.orderNb + 1
+    let currInterest = insertedPayment.balance * singleInterest
+    let currCapital
+    let currBalance = insertedPayment.balance
+
+    let newTransactionDataArr = []
+    let arraySplitted = splitArray(listTransaction, (e) => e.orderNb >= currOrderNb - 1)
+    let updateTransactionDataArr = arraySplitted.pass
+    let transactionUnchangedArr = arraySplitted.fail.concat(insertedPayment)
+
+    updateTransactionDataArr.forEach((e) => {
+        currCapital = e.installAmount - currInterest
+        if (currBalance >= currCapital) {
+            newTransactionDataArr.push({
+                date: e.date,
+                orderNb: currOrderNb,
+                installAmount: e.installAmount,
+                interest: currInterest,
+                balance: currBalance - currCapital,
+                status: e.status,
+            })
+            currDate = e.date + 86400 * timeReference[contractFrequency] * 1000
+            currBalance -= currCapital
+            currOrderNb += 1
+            currInterest = currBalance * singleInterest
+        }
+    })
+    newTransactionDataArr.push({
+        date: currDate,
+        orderNb: currOrderNb,
+        installAmount: currBalance + currInterest,
+        interest: currInterest,
+        balance: 0,
+        status: "pending"
+    })
+    return {
+        newTransactionDataArr: newTransactionDataArr,
+        transactionUnchangedArr: transactionUnchangedArr,
+    }
+}
+
+const reversePayment = (paymentObj) => {
+    
+}
+
+const addNewManualPayment = () => {
+    let listTransaction = listTransactionOrigin    
     let addNewManualPaymentBtn = document.getElementById("newManualPaymentBtn")
     let removeListTransactionNewBtn = document.getElementById("removeListTransactionNew")
-    listTransaction.forEach((e) => {
-        listTransactionDate.push(e.date) 
-    })
+    
     addNewManualPaymentBtn.addEventListener("click", function() {
-        let newManualPaymentAmt = document.getElementById("manualPaymentAmount").value
+        let newManualPaymentAmt = Number(document.getElementById("manualPaymentAmount").value)
         let newManualPaymentDate = getDateObj(document.getElementById("manualPaymentDate").value)
-        listTransactionDate.push(newManualPaymentDate)
-        listTransactionDate.sort(function(a, b) {
-            return a - b
-        })
-        let newManualPaymentDateIndex = listTransactionDate.indexOf(newManualPaymentDate)
-        let currBalance = 0
-        let singleInterest = 0.29/52
-        let interest = 0
-        if (newManualPaymentDateIndex == 0) {
-            currBalance = 347.2826564653784
-        } else if (newManualPaymentDateIndex == numberOfPayment) {
-            currBalance = listTransaction[newManualPaymentDateIndex].balance
-        } else {
-            currBalance = listTransaction[newManualPaymentDateIndex].balance
-        }
-        interest = currBalance * singleInterest
-        listTransaction.push({
-            "date": newManualPaymentDate,
-            "status": "Manual payment",
-            "installAmount": newManualPaymentAmt,
-            "balance": currBalance,
-            "interest": interest,
-            "orderNb": newManualPaymentDateIndex + 1,
-            "description": "",
-            "deleted": false
-        })
-        // paymentsDate.forEach((date, idx) => {
-        //     let currInterest = balance * singleInterest
-        //     let capital = contractCreated.installAmount - currInterest
-        //     balance -= capital
-        listTransaction.sort((a, b) => {
-            if (a.orderNb < b.orderNb) {
-                return -1
-            } else if (a.orderNb > b.orderNb) {
-                return 1
-            }
-            return -1
-        })
+
+        const newPayment = getInsertedPaymentData(listTransaction, newManualPaymentAmt, newManualPaymentDate, "Manual payment", "1w")
+        const arraySplitted = recalculateTransactions(listTransaction, newPayment, "1w")
+        listTransaction = arraySplitted.transactionUnchangedArr.concat(arraySplitted.newTransactionDataArr)
+        
         showListTransaction(listTransaction, "listTransactionNew")
     })
     removeListTransactionNewBtn.addEventListener("click", function() {
@@ -125,6 +186,71 @@ const addNewManualPayment = () => {
         listTransactionNewElement.innerHTML = ""
     })
 }
+
+// const addNewManualPayment = () => {
+//     let listTransaction = listTransactionOrigin    
+//     let listTransactionDate = []
+//     let addNewManualPaymentBtn = document.getElementById("newManualPaymentBtn")
+//     let removeListTransactionNewBtn = document.getElementById("removeListTransactionNew")
+//     listTransaction.forEach((e) => {
+//         listTransactionDate.push(e.date)
+//     })
+//     addNewManualPaymentBtn.addEventListener("click", function() {
+//         let newManualPaymentAmt = document.getElementById("manualPaymentAmount").value
+//         let newManualPaymentDate = getDateObj(document.getElementById("manualPaymentDate").value)
+//         listTransactionDate.push(newManualPaymentDate)
+//         listTransactionDate.sort(function(a, b) {
+//             return a - b
+//         })
+//         let newManualPaymentDateIndex = listTransactionDate.indexOf(newManualPaymentDate)
+//         let currBalance = 0
+//         let singleInterest = 0.29/52
+//         let interest = 0
+//         let currOrderNb = newManualPaymentDateIndex + 1
+//         if (newManualPaymentDateIndex == 0) {
+//             currBalance = 347.2826564653784
+//         } else {
+//             currBalance = listTransaction[newManualPaymentDateIndex - 1].balance
+//         }
+//         interest = currBalance * singleInterest
+//         listTransaction.push({
+//             "date": newManualPaymentDate,
+//             "status": "Manual payment",
+//             "installAmount": newManualPaymentAmt,
+//             "balance": currBalance - (newManualPaymentAmt - currBalance * singleInterest),
+//             "interest": currBalance * singleInterest,
+//             "orderNb": newManualPaymentDateIndex + 1,
+//             "description": "",
+//             "deleted": false
+//         })
+//         currBalance = currBalance - (newManualPaymentAmt - currBalance * singleInterest)
+//         let listTransactionFil = listTransaction.filter((trans) => trans.orderNb >= newManualPaymentDateIndex + 1 && trans.status != "Manual payment")
+//         listTransactionFil.forEach((trans, idx) => {
+//             let currInterest = currBalance * singleInterest
+//             let capital = trans.installAmount - currInterest
+//             trans.balance = currBalance
+//             trans.balance -= capital
+//             trans.orderNb = currOrderNb + 1
+//             trans.interest = currInterest
+//             currBalance -= capital
+//             currOrderNb += 1
+//         })
+//         listTransaction.sort((a, b) => {
+//             if (a.orderNb < b.orderNb) {
+//                 return -1
+//             } else if (a.orderNb > b.orderNb) {
+//                 return 1
+//             }
+//             return -1
+//         })
+//         showListTransaction(listTransaction, "listTransactionNew")
+//     })
+//     removeListTransactionNewBtn.addEventListener("click", function() {
+//         let listTransactionNewElement = document.getElementById("listTransactionNew")
+//         listTransaction = listTransaction.filter(e => e.status != "Manual payment")
+//         listTransactionNewElement.innerHTML = ""
+//     })
+// }
 
 export {
     showListTransaction,
