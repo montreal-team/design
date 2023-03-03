@@ -27,7 +27,6 @@ const getDateObj = (dateStr, time = "start") => {
 }
 
 const showListTransaction = (array, element) => {
-    if (array) {
         let listTransactionElement = document.getElementById(element)
         let html = `
         <tr>
@@ -52,8 +51,6 @@ const showListTransaction = (array, element) => {
             html += transactionElement
         })
         listTransactionElement.innerHTML = html
-    }
-    
 }
 
 const frequency = {
