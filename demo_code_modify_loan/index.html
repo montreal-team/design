@@ -35,7 +35,7 @@
                     <div>
                         <h3>Change frequency</h3>
                         <div>
-                            <label for="selectPayment">Select payment</label>
+                            <label for="selectPayment">Select payment numerical order (4)</label>
                             <input id="selectPayment" type="text" />
                         </div>
                         <div>
@@ -44,21 +44,21 @@
                         </div>
                         <div>
                             <label for="startDate">Start date</label>
-                            <input id="startDate" type="text" />
+                            <input id="startDate1" type="text" />
                         </div>
-                        <button>Change frequency</button>
+                        <button id="changeFrequencyBtn">Change frequency</button>
                     </div>
                     <div>
                         <h3>Change payment</h3>
                         <div>
-                            <label for="paymentAmount">Start date</label>
+                            <label for="paymentAmount">input payment amount</label>
                             <input id="paymentAmount" type="text" />
                         </div>
                         <div>
                             <label for="startDate">Start date</label>
-                            <input id="startDate" type="text" />
+                            <input id="startDate2" type="text" />
                         </div>
-                        <button>Change payment</button>
+                        <button id="changePaymentBtn">Change payment</button>
                     </div>
                 </div>
                 <div>
@@ -111,6 +111,7 @@
                 <table id="listTransaction"></table>
                 <table id="listTransactionNew"></table>
                 <button id="removeListTransactionNew">Remove new list of transaction</button>
+                <table id="listTrans"></table>
             </div>
         </div>
     </body>
