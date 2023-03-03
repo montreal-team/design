@@ -28,16 +28,17 @@ const getDateObj = (dateStr, time = "start") => {
 
 const showListTransaction = (array, element) => {
     let listTransactionElement = document.getElementById(element)
-    let html = `
-    <tr>
-        <th>ORDER NUMBER</th>
-        <th>DATE</th>
-        <th>AMOUNT</th>
-        <th>INTEREST</th>
-        <th>BALANCE</th>
-        <th>STATUS</th>
-    </tr>
-    `   
+    let html =
+    `
+        <tr>
+            <th>ORDER NUMBER</th>
+            <th>DATE</th>
+            <th>AMOUNT</th>
+            <th>INTEREST</th>
+            <th>BALANCE</th>
+            <th>STATUS</th>
+        </tr>
+    `
     array.forEach((e) => {
         const transactionElement = `
         <tr>
@@ -132,7 +133,7 @@ const recalculateTransactions = (arrOfTransaction, insertedPayment, contractFreq
 
     updateTransactionDataArr.forEach((e) => {
         currCapital = e.installAmount - currInterest
-        if (currBalance >= currCapital) {
+        if (currBalance > currCapital) {
             newTransactionDataArr.push({
                 date: e.date,
                 orderNb: currOrderNb,
@@ -147,26 +148,24 @@ const recalculateTransactions = (arrOfTransaction, insertedPayment, contractFreq
             currInterest = currBalance * singleInterest
         }
     })
-    newTransactionDataArr.push({
-        date: currDate,
-        orderNb: currOrderNb,
-        installAmount: currBalance + currInterest,
-        interest: currInterest,
-        balance: 0,
-        status: "pending"
-    })
+    if ((currBalance - currCapital).toFixed(2) > 0.00) {
+        newTransactionDataArr.push({
+            date: currDate,
+            orderNb: currOrderNb,
+            installAmount: currBalance + currInterest,
+            interest: currInterest,
+            balance: 0,
+            status: "pending"
+        })
+    }
     return {
         newTransactionDataArr: newTransactionDataArr,
         transactionUnchangedArr: transactionUnchangedArr,
     }
 }
 
-const reversePayment = (paymentObj) => {
-    
-}
-
 const addNewManualPayment = () => {
-    let listTransaction = listTransactionOrigin    
+    let listTransaction = listTransactionOrigin
     let addNewManualPaymentBtn = document.getElementById("newManualPaymentBtn")
     let removeListTransactionNewBtn = document.getElementById("removeListTransactionNew")
     
@@ -182,77 +181,71 @@ const addNewManualPayment = () => {
     })
     removeListTransactionNewBtn.addEventListener("click", function() {
         let listTransactionNewElement = document.getElementById("listTransactionNew")
-        listTransaction = listTransaction.filter(e => e.status != "Manual payment")
+        listTransaction = listTransactionOrigin
         listTransactionNewElement.innerHTML = ""
     })
 }
 
-// const addNewManualPayment = () => {
-//     let listTransaction = listTransactionOrigin    
-//     let listTransactionDate = []
-//     let addNewManualPaymentBtn = document.getElementById("newManualPaymentBtn")
-//     let removeListTransactionNewBtn = document.getElementById("removeListTransactionNew")
-//     listTransaction.forEach((e) => {
-//         listTransactionDate.push(e.date)
-//     })
-//     addNewManualPaymentBtn.addEventListener("click", function() {
-//         let newManualPaymentAmt = document.getElementById("manualPaymentAmount").value
-//         let newManualPaymentDate = getDateObj(document.getElementById("manualPaymentDate").value)
-//         listTransactionDate.push(newManualPaymentDate)
-//         listTransactionDate.sort(function(a, b) {
-//             return a - b
-//         })
-//         let newManualPaymentDateIndex = listTransactionDate.indexOf(newManualPaymentDate)
-//         let currBalance = 0
-//         let singleInterest = 0.29/52
-//         let interest = 0
-//         let currOrderNb = newManualPaymentDateIndex + 1
-//         if (newManualPaymentDateIndex == 0) {
-//             currBalance = 347.2826564653784
-//         } else {
-//             currBalance = listTransaction[newManualPaymentDateIndex - 1].balance
-//         }
-//         interest = currBalance * singleInterest
-//         listTransaction.push({
-//             "date": newManualPaymentDate,
-//             "status": "Manual payment",
-//             "installAmount": newManualPaymentAmt,
-//             "balance": currBalance - (newManualPaymentAmt - currBalance * singleInterest),
-//             "interest": currBalance * singleInterest,
-//             "orderNb": newManualPaymentDateIndex + 1,
-//             "description": "",
-//             "deleted": false
-//         })
-//         currBalance = currBalance - (newManualPaymentAmt - currBalance * singleInterest)
-//         let listTransactionFil = listTransaction.filter((trans) => trans.orderNb >= newManualPaymentDateIndex + 1 && trans.status != "Manual payment")
-//         listTransactionFil.forEach((trans, idx) => {
-//             let currInterest = currBalance * singleInterest
-//             let capital = trans.installAmount - currInterest
-//             trans.balance = currBalance
-//             trans.balance -= capital
-//             trans.orderNb = currOrderNb + 1
-//             trans.interest = currInterest
-//             currBalance -= capital
-//             currOrderNb += 1
-//         })
-//         listTransaction.sort((a, b) => {
-//             if (a.orderNb < b.orderNb) {
-//                 return -1
-//             } else if (a.orderNb > b.orderNb) {
-//                 return 1
-//             }
-//             return -1
-//         })
-//         showListTransaction(listTransaction, "listTransactionNew")
-//     })
-//     removeListTransactionNewBtn.addEventListener("click", function() {
-//         let listTransactionNewElement = document.getElementById("listTransactionNew")
-//         listTransaction = listTransaction.filter(e => e.status != "Manual payment")
-//         listTransactionNewElement.innerHTML = ""
-//     })
-// }
+const addNewRebate = () => {
+    let listTransaction = listTransactionOrigin
+    let addNewRebateBtn = document.getElementById("newRebateBtn")
+    let removeListTransactionNewBtn = document.getElementById("removeListTransactionNew")
+    
+    addNewRebateBtn.addEventListener("click", function() {
+        let newRebateAmt = Number(document.getElementById("rebateAmount").value)
+        let newRebateDate = getDateObj(document.getElementById("rebateDate").value)
+
+        const newPayment = getInsertedPaymentData(listTransaction, newRebateAmt, newRebateDate, "Rebate", "1w")
+        const arraySplitted = recalculateTransactions(listTransaction, newPayment, "1w")
+        listTransaction = arraySplitted.transactionUnchangedArr.concat(arraySplitted.newTransactionDataArr)
+        
+        showListTransaction(listTransaction, "listTransactionNew")
+    })
+    removeListTransactionNewBtn.addEventListener("click", function() {
+        let listTransactionNewElement = document.getElementById("listTransactionNew")
+        listTransaction = listTransactionOrigin
+        listTransactionNewElement.innerHTML = ""
+    })
+}
+
+const deferPayment = () => {
+    let listTransaction = listTransactionOrigin
+    let paymentOptionsElement = document.getElementById("selectDeferPayment")
+    let deferPaymentBtn = document.getElementById("deferPaymentBtn")
+    let removeListTransactionNewBtn = document.getElementById("removeListTransactionNew")
+    let paymentOptions = ''
+    listTransaction.forEach((e) => {
+        const html = `<option value="${e.orderNb}">Transaction ${e.orderNb}</option>`
+        paymentOptions += html
+    })
+    paymentOptionsElement.innerHTML = paymentOptions
+
+    deferPaymentBtn.addEventListener("click", function() {
+        let paymentOrderNb = Number(paymentOptionsElement.value)
+        let deferType = document.getElementById("selectDeferType").value
+        
+        if (deferType == "chargeImmediately") {
+            
+        } else {
+
+        }
+        const newPayment = getInsertedPaymentData(listTransaction, newRebateAmt, newRebateDate, "Rebate", "1w")
+        const arraySplitted = recalculateTransactions(listTransaction, newPayment, "1w")
+        listTransaction = arraySplitted.transactionUnchangedArr.concat(arraySplitted.newTransactionDataArr)
+        
+        showListTransaction(listTransaction, "listTransactionNew")
+    })
+    removeListTransactionNewBtn.addEventListener("click", function() {
+        let listTransactionNewElement = document.getElementById("listTransactionNew")
+        listTransaction = listTransactionOrigin
+        listTransactionNewElement.innerHTML = ""
+    })
+
+}
 
 export {
     showListTransaction,
     addNewManualPayment,
+    addNewRebate,
+    deferPayment
 }

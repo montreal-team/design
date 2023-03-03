@@ -77,11 +77,11 @@
                     <h1>Add new rebate</h1>
                     <div>
                         <label for="rebateAmount">Input new rebate</label>
-                        <input id="rebateDate" type="text" />
+                        <input id="rebateAmount" type="text" />
                     </div>
                     <div>
-                        <label for="manualPaymentDate">Input rebate date</label>
-                        <input id="manualPaymentDate" type="text" />
+                        <label for="rebatetDate">Input rebate date</label>
+                        <input id="rebateDate" type="text" />
                     </div>
                     <button id="newRebateBtn">Add new rebate</button>
                 </div>
@@ -93,12 +93,18 @@
                 </div>
                 <div>
                     <h1>Defer payment</h1>
-                    <label for="selectType">Defer payment</label>
-                    <select id="selectType">
-                        <option value="chargeImmediate">Charge immediate</option>
-                        <option value="chargeLater">Charge later</option>
-                    </select>
-                    <button>Defer payment</button>
+					<div>
+						<label for="selectDeferPayment">Select Payment</label>
+						<select id="selectDeferPayment"></select>
+					</div>
+					<div>
+						<label for="selectDeferType">Select type</label>
+						<select id="selectDeferType">
+							<option value="chargeImmediately">Charge immediately</option>
+							<option value="chargeLater">Charge later</option>
+						</select>
+					</div>
+                    <button id="deferPaymentBtn">Defer payment</button>
                 </div>
             </div>
             <div id="result">
