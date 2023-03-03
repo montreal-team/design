@@ -4,3 +4,7 @@ showListTransaction(transactions, "listTransaction")
 addNewManualPayment()
 addNewRebate()
 deferPayment()
+import {changeFrequency, changePayment } from "./module-modify/modifyLoan.js"
+
+changeFrequency()
+changePayment()

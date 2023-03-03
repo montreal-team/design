@@ -27,9 +27,9 @@ const getDateObj = (dateStr, time = "start") => {
 }
 
 const showListTransaction = (array, element) => {
-    let listTransactionElement = document.getElementById(element)
-    let html =
-    `
+    if (array) {
+        let listTransactionElement = document.getElementById(element)
+        let html = `
         <tr>
             <th>ORDER NUMBER</th>
             <th>DATE</th>
@@ -38,20 +38,22 @@ const showListTransaction = (array, element) => {
             <th>BALANCE</th>
             <th>STATUS</th>
         </tr>
-    `
-    array.forEach((e) => {
-        const transactionElement = `
-        <tr>
-            <td>#00000${e.orderNb}</td>
-            <td>${showUnixToDate(e.date)}</td>
-            <td>${e.installAmount.toFixed(2)}</td>
-            <td>${e.interest.toFixed(2)}</td>
-            <td>${e.balance.toFixed(2)}</td>
-            <td>${e.status}</td>
-        </tr>`
-        html += transactionElement
-    })
-    listTransactionElement.innerHTML = html
+        `
+        array.forEach((e) => {
+            const transactionElement = `
+            <tr>
+                <td>#00000${e.orderNb}</td>
+                <td>${showUnixToDate(e.date)}</td>
+                <td>${e.installAmount.toFixed(2)}</td>
+                <td>${e.interest.toFixed(2)}</td>
+                <td>${e.balance.toFixed(2)}</td>
+                <td>${e.status}</td>
+            </tr>`
+            html += transactionElement
+        })
+        listTransactionElement.innerHTML = html
+    }
+    
 }
 
 const frequency = {

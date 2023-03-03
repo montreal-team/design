@@ -8,7 +8,8 @@
         "interest": 1.936768661056918,
         "orderNb": 1,
         "description": "",
-        "deleted": false
+        "deleted": false,
+        "nameFreq": "1w"
     },
     {
         "_id": "63c66752468ccf0460f6c6fe",
@@ -19,7 +20,8 @@
         "interest": 1.7802621785897355,
         "orderNb": 2,
         "description": "",
-        "deleted": false
+        "deleted": false,
+        "nameFreq": "1w"
     },
     {
         "_id": "63c66752468ccf0460f6c6ff",
@@ -30,7 +32,8 @@
         "interest": 1.6228828715087935,
         "orderNb": 3,
         "description": "",
-        "deleted": false
+        "deleted": false,
+        "nameFreq": "1w"
     },
     {
         "_id": "63c66752468ccf0460f6c700",
@@ -41,7 +44,8 @@
         "interest": 1.464625872138362,
         "orderNb": 4,
         "description": "",
-        "deleted": false
+        "deleted": false,
+        "nameFreq": "1w"
     },
     {
         "_id": "63c66752468ccf0460f6c701",
@@ -52,7 +56,8 @@
         "interest": 1.3054862856560567,
         "orderNb": 5,
         "description": "",
-        "deleted": false
+        "deleted": false,
+        "nameFreq": "1w"
     },
     {
         "_id": "63c66752468ccf0460f6c702",
@@ -63,7 +68,8 @@
         "interest": 1.1454591899414461,
         "orderNb": 6,
         "description": "",
-        "deleted": false
+        "deleted": false,
+        "nameFreq": "1w"
     },
     {
         "_id": "63c66752468ccf0460f6c703",
@@ -74,7 +80,8 @@
         "interest": 0.984539635423812,
         "orderNb": 7,
         "description": "",
-        "deleted": false
+        "deleted": false,
+        "nameFreq": "1w"
     },
     {
         "_id": "63c66752468ccf0460f6c704",
@@ -85,7 +92,8 @@
         "interest": 0.8227226449290601,
         "orderNb": 8,
         "description": "",
-        "deleted": false
+        "deleted": false,
+        "nameFreq": "1w"
     },
     {
         "_id": "63c66752468ccf0460f6c705",
@@ -96,7 +104,8 @@
         "interest": 0.6600032135257798,
         "orderNb": 9,
         "description": "",
-        "deleted": false
+        "deleted": false,
+        "nameFreq": "1w"
     },
     {
         "_id": "63c66752468ccf0460f6c706",
@@ -107,7 +116,8 @@
         "interest": 0.4963763083704429,
         "orderNb": 10,
         "description": "",
-        "deleted": false
+        "deleted": false,
+        "nameFreq": "1w"
     },
     {
         "_id": "63c66752468ccf0460f6c707",
@@ -118,7 +128,8 @@
         "interest": 0.3318368685517396,
         "orderNb": 11,
         "description": "",
-        "deleted": false
+        "deleted": false,
+        "nameFreq": "1w"
     },
     {
         "_id": "63c66752468ccf0460f6c708",
@@ -129,6 +140,7 @@
         "interest": 0.16637980493404741,
         "orderNb": 12,
         "description": "",
-        "deleted": false
+        "deleted": false,
+        "nameFreq": "1w"
     }
 ]
