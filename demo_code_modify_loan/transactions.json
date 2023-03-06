@@ -1,6 +1,5 @@
 [
     {
-        "_id": "63c66752468ccf0460f6c6fd",
         "date": 1681102800000,
         "status": "pending",
         "installAmount": 30,
@@ -12,7 +11,6 @@
         "nameFreq": "1w"
     },
     {
-        "_id": "63c66752468ccf0460f6c6fe",
         "date": 1681448400000,
         "status": "pending",
         "installAmount": 30,
@@ -24,7 +22,6 @@
         "nameFreq": "1w"
     },
     {
-        "_id": "63c66752468ccf0460f6c6ff",
         "date": 1682053200000,
         "status": "pending",
         "installAmount": 30,
@@ -36,7 +33,6 @@
         "nameFreq": "1w"
     },
     {
-        "_id": "63c66752468ccf0460f6c700",
         "date": 1682658000000,
         "status": "pending",
         "installAmount": 30,
@@ -48,7 +44,6 @@
         "nameFreq": "1w"
     },
     {
-        "_id": "63c66752468ccf0460f6c701",
         "date": 1683262800000,
         "status": "pending",
         "installAmount": 30,
@@ -60,7 +55,6 @@
         "nameFreq": "1w"
     },
     {
-        "_id": "63c66752468ccf0460f6c702",
         "date": 1683867600000,
         "status": "pending",
         "installAmount": 30,
@@ -72,7 +66,6 @@
         "nameFreq": "1w"
     },
     {
-        "_id": "63c66752468ccf0460f6c703",
         "date": 1684472400000,
         "status": "pending",
         "installAmount": 30,
@@ -84,7 +77,6 @@
         "nameFreq": "1w"
     },
     {
-        "_id": "63c66752468ccf0460f6c704",
         "date": 1685077200000,
         "status": "pending",
         "installAmount": 30,
@@ -96,7 +88,6 @@
         "nameFreq": "1w"
     },
     {
-        "_id": "63c66752468ccf0460f6c705",
         "date": 1685682000000,
         "status": "pending",
         "installAmount": 30,
@@ -108,7 +99,6 @@
         "nameFreq": "1w"
     },
     {
-        "_id": "63c66752468ccf0460f6c706",
         "date": 1686286800000,
         "status": "pending",
         "installAmount": 30,
@@ -120,7 +110,6 @@
         "nameFreq": "1w"
     },
     {
-        "_id": "63c66752468ccf0460f6c707",
         "date": 1686891600000,
         "status": "pending",
         "installAmount": 30,
@@ -132,7 +121,6 @@
         "nameFreq": "1w"
     },
     {
-        "_id": "63c66752468ccf0460f6c708",
         "date": 1687496400000,
         "status": "pending",
         "installAmount": 30,

@@ -105,18 +105,7 @@ const getInsertedPaymentData = (arrOfTransaction, newPaymentAmt, newPaymentDate,
     }
 }
 
-const splitArray = (array, condtFunc) => {
-    let [pass, fail] = array.reduce(([pass, fail], e) => {
-        return condtFunc(e) ? [[...pass, e], fail] : [pass, [...fail, e]]
-    }, [[], []])
-    return {
-        pass: pass,
-        fail: fail
-    }
-}
-
-const recalculateTransactions = (arrOfTransaction, insertedPayment, contractFrequency) => {
-    let listTransaction = arrOfTransaction
+const getUpdatedTransactionArr = (arrOfTransaction, insertedPayment, contractFrequency, typeOfPayment) => {
     let singleInterest = 0.29/frequency[contractFrequency]
 
     let currDate = insertedPayment.date
@@ -126,15 +115,13 @@ const recalculateTransactions = (arrOfTransaction, insertedPayment, contractFreq
     let currBalance = insertedPayment.balance
 
     let newTransactionDataArr = []
-    let arraySplitted = splitArray(listTransaction, (e) => e.orderNb >= currOrderNb - 1)
-    let updateTransactionDataArr = arraySplitted.pass
-    let transactionUnchangedArr = arraySplitted.fail.concat(insertedPayment)
+    let updateTransactionDataArr = arrOfTransaction.filter((e) => e.orderNb >= currOrderNb - 1)
 
     updateTransactionDataArr.forEach((e) => {
         currCapital = e.installAmount - currInterest
-        if (currBalance > currCapital) {
+        if (currBalance >= currCapital) {
             newTransactionDataArr.push({
-                date: e.date,
+                date: ["deferPaymentImmediately", "deferPaymentLater"].includes(typeOfPayment) ? e.date + 86400 * timeReference[contractFrequency] * 1000 : e.date,
                 orderNb: currOrderNb,
                 installAmount: e.installAmount,
                 interest: currInterest,
@@ -147,7 +134,7 @@ const recalculateTransactions = (arrOfTransaction, insertedPayment, contractFreq
             currInterest = currBalance * singleInterest
         }
     })
-    if ((currBalance - currCapital).toFixed(2) > 0.00) {
+    if (currBalance.toFixed(2) > 0.00) {
         newTransactionDataArr.push({
             date: currDate,
             orderNb: currOrderNb,
@@ -156,11 +143,49 @@ const recalculateTransactions = (arrOfTransaction, insertedPayment, contractFreq
             balance: 0,
             status: "pending"
         })
+        currDate = currDate + 86400 * timeReference[contractFrequency] * 1000
+        currOrderNb += 1
     }
-    return {
-        newTransactionDataArr: newTransactionDataArr,
-        transactionUnchangedArr: transactionUnchangedArr,
+    if (typeOfPayment == "deferPaymentLater") {
+        currBalance += 25
+        newTransactionDataArr.push({
+            date: currDate + 86400 * timeReference[contractFrequency] * 1000,
+            orderNb: currOrderNb,
+            installAmount: 25,
+            interest: 0,
+            balance: 0,
+            status: "pending"
+        })
     }
+    return newTransactionDataArr
+}
+
+const handleDataArr = (dataArr, condtFunc, newPayment, updatedTransactionDataArr, type) => {
+    let result = []
+    let unchangedPart = dataArr.filter(condtFunc)
+    if (["manualPayment", "rebate"].includes(type)) {
+        unchangedPart = unchangedPart.concat(newPayment)
+    } else if (type == "deferPaymentImmediately") {
+        unchangedPart = unchangedPart.concat({
+            date: newPayment.date,
+            orderNb: newPayment.orderNb,
+            installAmount: 25,
+            interest: 0,
+            balance: 0,
+            status: "Deferred payment"
+        })
+    } else if (type == "deferPaymentLater") {
+        unchangedPart = unchangedPart.concat({
+            date: newPayment.date,
+            orderNb: newPayment.orderNb,
+            installAmount: 0,
+            interest: 0,
+            balance: 0,
+            status: "Deferred payment"
+        })
+    }
+    result = unchangedPart.concat(updatedTransactionDataArr)
+    return result
 }
 
 const addNewManualPayment = () => {
@@ -173,8 +198,10 @@ const addNewManualPayment = () => {
         let newManualPaymentDate = getDateObj(document.getElementById("manualPaymentDate").value)
 
         const newPayment = getInsertedPaymentData(listTransaction, newManualPaymentAmt, newManualPaymentDate, "Manual payment", "1w")
-        const arraySplitted = recalculateTransactions(listTransaction, newPayment, "1w")
-        listTransaction = arraySplitted.transactionUnchangedArr.concat(arraySplitted.newTransactionDataArr)
+        const updatedTransactionDataArr = getUpdatedTransactionArr(listTransaction, newPayment, "1w", "manualPayment")
+
+        let condtFunc = (e) => e.orderNb < newPayment.orderNb
+        listTransaction = handleDataArr(listTransaction, condtFunc, newPayment, updatedTransactionDataArr, "manualPayment")
         
         showListTransaction(listTransaction, "listTransactionNew")
     })
@@ -195,8 +222,10 @@ const addNewRebate = () => {
         let newRebateDate = getDateObj(document.getElementById("rebateDate").value)
 
         const newPayment = getInsertedPaymentData(listTransaction, newRebateAmt, newRebateDate, "Rebate", "1w")
-        const arraySplitted = recalculateTransactions(listTransaction, newPayment, "1w")
-        listTransaction = arraySplitted.transactionUnchangedArr.concat(arraySplitted.newTransactionDataArr)
+        const updatedTransactionDataArr = getUpdatedTransactionArr(listTransaction, newPayment, "1w", "rebate")
+        
+        let condtFunc = (e) => e.orderNb < newPayment.orderNb
+        listTransaction = handleDataArr(listTransaction, condtFunc, newPayment, updatedTransactionDataArr, "rebate")
         
         showListTransaction(listTransaction, "listTransactionNew")
     })
@@ -218,20 +247,30 @@ const deferPayment = () => {
         paymentOptions += html
     })
     paymentOptionsElement.innerHTML = paymentOptions
-
+    
     deferPaymentBtn.addEventListener("click", function() {
-        let paymentOrderNb = Number(paymentOptionsElement.value)
+        let deferOrderNb = Number(paymentOptionsElement.value)
         let deferType = document.getElementById("selectDeferType").value
-        
+        let insertedPayment
+        let deferDate
+        listTransaction.forEach((e) => {
+            if (e.orderNb == (deferOrderNb - 1)) {
+                insertedPayment = {...e}
+            }
+            if (e.orderNb == deferOrderNb) {
+                deferDate = e.date
+            }
+        })
+        insertedPayment.date = deferDate
+        insertedPayment.orderNb = deferOrderNb
+        let condtFunc = (e) => e.orderNb < insertedPayment.orderNb
         if (deferType == "chargeImmediately") {
-            
+            const updatedTransactionDataArr = getUpdatedTransactionArr(listTransaction, insertedPayment, "1w", "deferPaymentImmediately")
+            listTransaction = handleDataArr(listTransaction, condtFunc, insertedPayment, updatedTransactionDataArr, "deferPaymentImmediately")
         } else {
-
+            const updatedTransactionDataArr = getUpdatedTransactionArr(listTransaction, insertedPayment, "1w", "deferPaymentLater")
+            listTransaction = handleDataArr(listTransaction, condtFunc, insertedPayment, updatedTransactionDataArr, "deferPaymentLater")
         }
-        const newPayment = getInsertedPaymentData(listTransaction, newRebateAmt, newRebateDate, "Rebate", "1w")
-        const arraySplitted = recalculateTransactions(listTransaction, newPayment, "1w")
-        listTransaction = arraySplitted.transactionUnchangedArr.concat(arraySplitted.newTransactionDataArr)
-        
         showListTransaction(listTransaction, "listTransactionNew")
     })
     removeListTransactionNewBtn.addEventListener("click", function() {
@@ -239,7 +278,6 @@ const deferPayment = () => {
         listTransaction = listTransactionOrigin
         listTransactionNewElement.innerHTML = ""
     })
-
 }
 
 export {
