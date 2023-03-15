@@ -42,12 +42,13 @@ const buildTransactions = (
 
 //  ----------------- for quebec region ------------------
 let amt = 36.57;
-let totalOwing = 500;
+let totalOwing = 779.74; // = 59.98 * 13
 let loans = 500 // for quebec need to add this
 let fees = 20
 let initInsNb = 13;
 let rate = 0.29;
-let initInsAmt = 59.98
+// let initInsAmt = 59.98
+let initInsAmt = parseFloat(totalOwing / initInsNb).toFixed(2);
 // totalOwing/((1- Math.pow((1+rate/52),-initInsNb))/rate)
 let reimFreq = "every_week";
 
