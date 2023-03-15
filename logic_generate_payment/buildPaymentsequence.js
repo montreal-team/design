@@ -55,7 +55,7 @@ const updateTransaction = (sequences = [], arr = []) => {
 };
 
 let amt = 36.57;
-let totalOwing = 438.8;
+let totalOwing = 438.8; // = parseFloat(initInsAmt * initInsNb).toFixed(2);
 let initInsNb = 12;
 let initInsAmt = parseFloat(totalOwing / initInsNb).toFixed(2);
 let rate = 0.29;
