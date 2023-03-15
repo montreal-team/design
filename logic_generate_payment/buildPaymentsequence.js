@@ -55,9 +55,11 @@ const updateTransaction = (sequences = [], arr = []) => {
 };
 
 let amt = 36.57;
-let totalOwing = 438.8; // = parseFloat(initInsAmt * initInsNb).toFixed(2);
-let initInsNb = 12;
-let initInsAmt = parseFloat(totalOwing / initInsNb).toFixed(2);
+let totalOwing = 779.74; // = 59.98 * 13
+let loans = 500 // for quebec need to add this
+let fees = 20
+let initInsNb = 13;
+let initInsAmt = 59.98 // = parseFloat(totalOwing / initInsNb).toFixed(2);
 let rate = 0.29;
 let reimFreq = "every_week";
 
