@@ -67,6 +67,41 @@ export const genTrans = ({ intRate = 0.29, freq = 52.0, fees = 0, totalsSeqNb = 
     return trans
 }
 
+export const genAdditionalTrans = ({
+    orderNbInput = 1,
+    balanceInput = 0,
+    intRate = 0.29,
+    freq = 52.0,
+    fees = 0,
+    amt = 0,
+}) => {
+    let singleInt = intRate / freq
+    const amount = amt - fees
+    let balance = balanceInput
+    let trans = []
+    let idx = orderNbInput
+    /// update code here .....
+    // while (parseFloat(balance).toFixed(2) > 0) {
+    //     console.log(parseFloat(balance).toFixed(2))
+    //     idx++
+    //     let interest = balance * singleInt
+    //     let capital = amt - interest - fees
+    //     balance = balance - capital
+    //     balance = balance < 0 ? 0 : balance
+    //     trans.push({
+    //         orderNb: idx,
+    //         date: "",
+    //         installAmount: amt,
+    //         interest: parseFloat(interest).toFixed(2),
+    //         capital: parseFloat(capital).toFixed(2),
+    //         fees,
+    //         balance: parseFloat(balance).toFixed(2),
+    //         status: "",
+    //     })
+    // }
+    return trans
+}
+
 const provinceArr = [
     {
         text: "Alberta",
@@ -261,7 +296,7 @@ export const genDate = ({ firstDate, secondDate, startPayDate, totalsSeqNb = 1, 
 
     // let startDate = new Date(startPayDate)
 
-    // let startD = startDate.getDate()
+    // let startD = startDate.getDate()\
     // let startM = startDate.getMonth() + 1
     // let startY = startDate.getFullYear()
     console.log("startPayDate.split=> ", startPayDate.split("/"))
