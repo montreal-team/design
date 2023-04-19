@@ -259,7 +259,7 @@ export const genDate = ({ firstDate, secondDate, startPayDate, totalsSeqNb = 1, 
     let F = firstDate
     let S = secondDate
 
-    let startDate = new Date(startPayDate)
+    // let startDate = new Date(startPayDate)
 
     // let startD = startDate.getDate()
     // let startM = startDate.getMonth() + 1
