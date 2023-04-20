@@ -1,5 +1,5 @@
 <script setup>
-import { frequencyObj, timeReferenceObj, genTrans, getDateString, genDate, updateDateToTrans } from "../libs/helper"
+import { frequencyObj, timeReferenceObj, genTrans, getDateString, genDate, updateDateToTrans, findProcessionData, findlastValueBalance, createInsertData } from "../libs/helper"
 import { ref, reactive } from "vue"
 const count = ref(0)
 const headers = ["orderNb", "date", "installAmount", "interest", "capital", "fees", "balance", "status"]
@@ -14,6 +14,7 @@ const genParm = reactive({
     fees: 0,
     freq: 52,
 })
+let rebate = {}
 
 let genDateArr = ref(
     genDate({
@@ -45,6 +46,25 @@ const onInit = () => {
         province: "Quebec",
     })
     data.value = updateDateToTrans(trans, genDateArr.value)
+}
+
+const addRebate = (rebateData) => {
+    let newData = []
+    const date = rebateData.date
+    date.split("/")
+    let startD = parseInt(date.split("/")[0])
+    let startM = parseInt(date.split("/")[1])
+    let startY = parseInt(date.split("/")[2])
+    const rebateDate = new Date(`${startM}/${startD}/${startY}`)
+    const dataTrans = [...data.value]
+    const findData = findProcessionData(dataTrans, rebateDate)
+    newData = newData.concat(findData.beforeTrans)
+    const lastBeforeTrans = findlastValueBalance(findData.beforeTrans)
+    const createTrans = createInsertData(`rebate`, lastBeforeTrans.balance, lastBeforeTrans.orderNb + 1, rebateData.amount, lastBeforeTrans.fees, rebateDate, lastBeforeTrans.freq)
+    newData.push(createTrans)
+    const updateTrans = updateExistData(findData.afterTrans, createTrans.balance)
+    console.log(newData)
+    // data.value = newData
 }
 </script>
 
@@ -80,5 +100,12 @@ const onInit = () => {
                 </div>
             </div>
         </div>
+    </div>
+    <div class="p-3 flex space-x-2 w-full justify-center items-center">
+        <label for="province">New rebate amount</label>
+        <input type="mumber" ref="rebateAmount" class="border w-12" v-model="rebate.amount" />
+        <label for="firstDate">rebate date</label>
+        <input type="text" ref="rebateDate" class="border w-32" v-model="rebate.date" />
+        <button class="px-2 py-1 border bg-red-200" @click="addRebate(rebate)">rebate</button>
     </div>
 </template>
