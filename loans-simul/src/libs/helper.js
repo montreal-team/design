@@ -340,7 +340,7 @@ export const findlastValidBalance = (data, location) => {
         trans = data.find((element) => parseFloat(element.balance).toFixed(2) > 0);
         validBalance = Number(trans.balance) + Number(trans.capital)
     } else {
-        trans = data.findLast((element) => parseFloat(element.balance).toFixed(2) > 0 && element.orderNb <= location);
+        trans = data.findLast((element) => (element.status != 'stopPayment') && data.indexOf(element) < location);
         validBalance = Number(trans.balance)
     }
     return validBalance
@@ -350,6 +350,7 @@ export const createInsertData = (status = '', lastBalance, orderNb, installAmoun
     let interest = Number(lastBalance) * 0.29/frequencyObj[transData.freq]
     let capital = Number(installAmount) - interest
     let balance = lastBalance - capital
+    balance = balance < 0 ? 0 : balance
     let {...trans} = transData
     Object.assign(trans, {
             status: status,
@@ -363,15 +364,16 @@ export const createInsertData = (status = '', lastBalance, orderNb, installAmoun
     return trans
 }
 
-export const updateExistData = (dataTrans, lastBalance, orderNb) => {
-    let newData = []
-    let currBalance = lastBalance
-    let currOrderNb = orderNb
-    dataTrans.forEach(el => {
-        if (Number(currBalance) > 0) {
+export const updateExistData = (transArr , updateLocation) => {
+    let newTransArr= []
+    let currBalance = findlastValidBalance(transArr , updateLocation)
+    let currOrderNb = updateLocation + 1
+    transArr.filter(trans => transArr.indexOf(trans) >= updateLocation).forEach(el => {
+        if (parseFloat(currBalance).toFixed(2) > 0) {
             let installAmount = el.installAmount
             let currInterest = Number(currBalance) * 0.29/frequencyObj[el.freq]
             let capital = Number(installAmount) - currInterest
+            // console.log(parseFloat(currBalance).toFixed(2) < parseFloat(capital).toFixed(2))
             if (Number(parseFloat(currBalance).toFixed(2)) < Number(parseFloat(capital).toFixed(2))) {
                 capital = currBalance
                 currBalance = 0
@@ -379,19 +381,20 @@ export const updateExistData = (dataTrans, lastBalance, orderNb) => {
             } else {
                 currBalance -=  capital
             }
-            newData.splice(newData.length, 0,{
-                status: el.status,
-                orderNb: currOrderNb,
+            let newTrans = el
+            Object.assign(newTrans, {
                 installAmount: parseFloat(installAmount).toFixed(2),
-                fees: el.fees,
-                date: el.date,
-                freq: el.freq,
                 interest: parseFloat(currInterest).toFixed(2),
                 capital: parseFloat(capital).toFixed(2),
                 balance: parseFloat(currBalance).toFixed(2),
+                orderNb: currOrderNb
             })
+            newTransArr.push(newTrans)
             currOrderNb++
         }
+        if (parseFloat(currBalance).toFixed(2) <= 0) {
+            
+        }
     })
-    return newData
+    return transArr.filter(trans => transArr.indexOf(trans) < updateLocation).concat(newTransArr)
 }

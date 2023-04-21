@@ -58,17 +58,14 @@ const addRebate = (rebateData) => {
     const rebateDate = new Date(startY, startM - 1, startD, 12, 0, 0).getTime()
 
     //BE
-    let newData = []
-    const dataTrans = [...data.value]
-    const rebateLocation = findProcessionData(dataTrans, rebateDate)
-    if (rebateLocation < dataTrans.length) {
-        const validBalance = findlastValidBalance(dataTrans, rebateLocation)
-        const createTrans = createInsertData(`rebate`, validBalance, rebateLocation, rebateData.amount, rebateDate, dataTrans[rebateLocation])
-        console.log(rebateLocation, validBalance, createTrans)
-        // newData.splice(newData.length , 0, createTrans)
-        // const updateTrans = updateExistData(afterTrans, createTrans.balance, newData.length + 1)
-        // newData = newData.concat(updateTrans)
-        // data.value = newData
+    const [...transArr] = data.value
+    const rebateLocation = findProcessionData(transArr, rebateDate)
+    if (rebateLocation < transArr.length) {
+        const validBalance = findlastValidBalance(transArr, rebateLocation)
+        const createTrans = createInsertData(`rebate`, validBalance, rebateLocation + 1, rebateData.amount, rebateDate, transArr[rebateLocation])
+        transArr.splice(rebateLocation , 0, createTrans)
+        let newTransArr = updateExistData(transArr, rebateLocation + 1)
+        data.value = newTransArr
     }
 }
 </script>
