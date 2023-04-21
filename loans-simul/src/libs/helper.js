@@ -357,12 +357,35 @@ export const createInsertData = (status = '', lastBalance, orderNb, installAmoun
     return trans
 }
 
-export const updateExistData = (dataTrans, lastBalance) => {
+export const updateExistData = (dataTrans, lastBalance, orderNb) => {
     let newData = []
     let currBalance = lastBalance
+    let currOrderNb = orderNb
     dataTrans.forEach(el => {
-        let currInterest = Number(lastBalance) * 0.29/frequencyObj[el.freq]
-
+        if (Number(currBalance) > 0) {
+            let installAmount = el.installAmount
+            let currInterest = Number(currBalance) * 0.29/frequencyObj[el.freq]
+            let capital = Number(installAmount) - currInterest
+            if (Number(parseFloat(currBalance).toFixed(2)) < Number(parseFloat(capital).toFixed(2))) {
+                capital = currBalance
+                currBalance = 0
+                installAmount = capital + currInterest
+            } else {
+                currBalance -=  capital
+            }
+            newData.splice(newData.length, 0,{
+                status: el.status,
+                orderNb: currOrderNb,
+                installAmount: parseFloat(installAmount).toFixed(2),
+                fees: el.fees,
+                date: el.date,
+                freq: el.freq,
+                interest: parseFloat(currInterest).toFixed(2),
+                capital: parseFloat(capital).toFixed(2),
+                balance: parseFloat(currBalance).toFixed(2),
+            })
+            currOrderNb++
+        }
     })
     return newData
 }

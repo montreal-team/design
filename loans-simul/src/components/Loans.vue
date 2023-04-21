@@ -1,5 +1,5 @@
 <script setup>
-import { frequencyObj, timeReferenceObj, genTrans, getDateString, genDate, updateDateToTrans, findProcessionData, findlastValueBalance, createInsertData } from "../libs/helper"
+import { frequencyObj, timeReferenceObj, genTrans, getDateString, genDate, updateDateToTrans, findProcessionData, findlastValueBalance, createInsertData, updateExistData } from "../libs/helper"
 import { ref, reactive } from "vue"
 const count = ref(0)
 const headers = ["orderNb", "date", "installAmount", "interest", "capital", "fees", "balance", "status"]
@@ -49,22 +49,25 @@ const onInit = () => {
 }
 
 const addRebate = (rebateData) => {
-    let newData = []
+    //front end
     const date = rebateData.date
     date.split("/")
     let startD = parseInt(date.split("/")[0])
     let startM = parseInt(date.split("/")[1])
     let startY = parseInt(date.split("/")[2])
     const rebateDate = new Date(`${startM}/${startD}/${startY}`)
+
+    //BE
+    let newData = []
     const dataTrans = [...data.value]
-    const findData = findProcessionData(dataTrans, rebateDate)
-    newData = newData.concat(findData.beforeTrans)
-    const lastBeforeTrans = findlastValueBalance(findData.beforeTrans)
+    const {beforeTrans, afterTrans} = findProcessionData(dataTrans, rebateDate)
+    newData = newData.concat(beforeTrans)
+    const lastBeforeTrans = findlastValueBalance(beforeTrans)
     const createTrans = createInsertData(`rebate`, lastBeforeTrans.balance, lastBeforeTrans.orderNb + 1, rebateData.amount, lastBeforeTrans.fees, rebateDate, lastBeforeTrans.freq)
-    newData.push(createTrans)
-    const updateTrans = updateExistData(findData.afterTrans, createTrans.balance)
-    console.log(newData)
-    // data.value = newData
+    newData.splice(newData.length , 0, createTrans)
+    const updateTrans = updateExistData(afterTrans, createTrans.balance, newData.length + 1)
+    newData = newData.concat(updateTrans)
+    data.value = newData
 }
 </script>
 
