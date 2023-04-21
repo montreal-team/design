@@ -347,20 +347,19 @@ export const findlastValidBalance = (data, location) => {
 }
 
 export const createInsertData = (status = '', lastBalance, orderNb, installAmount, date, transData) => {
-    let interest = Number(lastBalance) * 0.29/frequencyObj[freq]
+    let interest = Number(lastBalance) * 0.29/frequencyObj[transData.freq]
     let capital = Number(installAmount) - interest
     let balance = lastBalance - capital
-    let trans = {
-        status: status,
-        orderNb: orderNb,
-        installAmount: installAmount,
-        fees: fees,
-        date: date,
-        freq: freq,
-        interest: parseFloat(interest).toFixed(2),
-        capital: parseFloat(capital).toFixed(2),
-        balance: parseFloat(balance).toFixed(2),
-    };
+    let {...trans} = transData
+    Object.assign(trans, {
+            status: status,
+            orderNb: orderNb,
+            installAmount: installAmount,
+            date: date,
+            interest: parseFloat(interest).toFixed(2),
+            capital: parseFloat(capital).toFixed(2),
+            balance: parseFloat(balance).toFixed(2),
+        })
     return trans
 }
 

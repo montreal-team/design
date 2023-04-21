@@ -62,10 +62,9 @@ const addRebate = (rebateData) => {
     const dataTrans = [...data.value]
     const rebateLocation = findProcessionData(dataTrans, rebateDate)
     if (rebateLocation < dataTrans.length) {
-        // newData = newData.concat(beforeTrans)
         const validBalance = findlastValidBalance(dataTrans, rebateLocation)
-        // const createTrans = createInsertData(`rebate`, validBalance, rebateNum, rebateData.amount, rebateDate, dataTrans[rebateNum])
-        console.log(rebateLocation, validBalance)
+        const createTrans = createInsertData(`rebate`, validBalance, rebateLocation, rebateData.amount, rebateDate, dataTrans[rebateLocation])
+        console.log(rebateLocation, validBalance, createTrans)
         // newData.splice(newData.length , 0, createTrans)
         // const updateTrans = updateExistData(afterTrans, createTrans.balance, newData.length + 1)
         // newData = newData.concat(updateTrans)
