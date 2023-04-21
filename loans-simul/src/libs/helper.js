@@ -330,16 +330,23 @@ export const updateDateToTrans = (paymentArr, dateArr) => {
 
 export const findProcessionData = (data, date) => {
     const beforeTrans = data.filter(el => new Date(el.date) < date)
-    const afterTrans = data.filter(el => new Date(el.date) >= date)
-    return {beforeTrans: beforeTrans, afterTrans: afterTrans}
+    return beforeTrans.length
 }
 
-export const findlastValueBalance = (data) => {
-    let trans = data.findLast((element) => !!element.balance);
-    return trans
+export const findlastValidBalance = (data, location) => {
+    let trans = {}
+    let validBalance = 0
+    if (!location) {
+        trans = data.find((element) => parseFloat(element.balance).toFixed(2) > 0);
+        validBalance = Number(trans.balance) + Number(trans.capital)
+    } else {
+        trans = data.findLast((element) => parseFloat(element.balance).toFixed(2) > 0 && element.orderNb <= location);
+        validBalance = Number(trans.balance)
+    }
+    return validBalance
 }
 
-export const createInsertData = (status = '', lastBalance, orderNb, installAmount, fees, date, freq) => {
+export const createInsertData = (status = '', lastBalance, orderNb, installAmount, date, transData) => {
     let interest = Number(lastBalance) * 0.29/frequencyObj[freq]
     let capital = Number(installAmount) - interest
     let balance = lastBalance - capital

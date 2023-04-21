@@ -1,5 +1,5 @@
 <script setup>
-import { frequencyObj, timeReferenceObj, genTrans, getDateString, genDate, updateDateToTrans, findProcessionData, findlastValueBalance, createInsertData, updateExistData } from "../libs/helper"
+import { frequencyObj, timeReferenceObj, genTrans, getDateString, genDate, updateDateToTrans, findProcessionData,  findlastValidBalance, createInsertData, updateExistData } from "../libs/helper"
 import { ref, reactive } from "vue"
 const count = ref(0)
 const headers = ["orderNb", "date", "installAmount", "interest", "capital", "fees", "balance", "status"]
@@ -12,7 +12,7 @@ const genParm = reactive({
     amt: 80,
     nb: 6,
     fees: 0,
-    freq: 52,
+    freq: 26,
 })
 let rebate = {}
 
@@ -55,19 +55,22 @@ const addRebate = (rebateData) => {
     let startD = parseInt(date.split("/")[0])
     let startM = parseInt(date.split("/")[1])
     let startY = parseInt(date.split("/")[2])
-    const rebateDate = new Date(`${startM}/${startD}/${startY}`)
+    const rebateDate = new Date(startY, startM - 1, startD, 12, 0, 0).getTime()
 
     //BE
     let newData = []
     const dataTrans = [...data.value]
-    const {beforeTrans, afterTrans} = findProcessionData(dataTrans, rebateDate)
-    newData = newData.concat(beforeTrans)
-    const lastBeforeTrans = findlastValueBalance(beforeTrans)
-    const createTrans = createInsertData(`rebate`, lastBeforeTrans.balance, lastBeforeTrans.orderNb + 1, rebateData.amount, lastBeforeTrans.fees, rebateDate, lastBeforeTrans.freq)
-    newData.splice(newData.length , 0, createTrans)
-    const updateTrans = updateExistData(afterTrans, createTrans.balance, newData.length + 1)
-    newData = newData.concat(updateTrans)
-    data.value = newData
+    const rebateLocation = findProcessionData(dataTrans, rebateDate)
+    if (rebateLocation < dataTrans.length) {
+        // newData = newData.concat(beforeTrans)
+        const validBalance = findlastValidBalance(dataTrans, rebateLocation)
+        // const createTrans = createInsertData(`rebate`, validBalance, rebateNum, rebateData.amount, rebateDate, dataTrans[rebateNum])
+        console.log(rebateLocation, validBalance)
+        // newData.splice(newData.length , 0, createTrans)
+        // const updateTrans = updateExistData(afterTrans, createTrans.balance, newData.length + 1)
+        // newData = newData.concat(updateTrans)
+        // data.value = newData
+    }
 }
 </script>
 
