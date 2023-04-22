@@ -11,9 +11,18 @@ const genParm = reactive({
     startPayDate: "01/01/2023",
     amt: 80,
     nb: 6,
-    fees: 0,
+    fees: 20,
     freq: 26,
 })
+const contract = {
+    isCreditVariable: true,
+    paymentFees: {
+        everyWeek: 10,
+        everyTwoWeeks: 20,
+        twiceAMonth: 20,
+        everyMonth: 40,
+    }
+}
 let rebate = {}
 
 let genDateArr = ref(
@@ -60,13 +69,11 @@ const addRebate = (rebateData) => {
     //BE
     const [...transArr] = data.value
     const rebateLocation = findProcessionData(transArr, rebateDate)
-    if (rebateLocation < transArr.length) {
-        const validBalance = findlastValidBalance(transArr, rebateLocation)
-        const createTrans = createInsertData(`rebate`, validBalance, rebateLocation + 1, rebateData.amount, rebateDate, transArr[rebateLocation])
-        transArr.splice(rebateLocation , 0, createTrans)
-        let newTransArr = updateExistData(transArr, rebateLocation + 1)
-        data.value = newTransArr
-    }
+    const validBalance = findlastValidBalance(transArr, rebateLocation)
+    const createTrans = createInsertData(`rebate`, validBalance, rebateLocation + 1, rebateData.amount, rebateDate, transArr[rebateLocation], contract)
+    transArr.splice(rebateLocation , 0, createTrans)
+    let newTransArr = updateExistData(transArr, rebateLocation + 1, contract)
+    data.value = newTransArr
 }
 </script>
 
