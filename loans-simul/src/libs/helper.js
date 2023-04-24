@@ -320,6 +320,7 @@ export const genDate = ({ firstDate, secondDate, startPayDate, totalsSeqNb = 1, 
 
 export const updateDateToTrans = (paymentArr, dateArr) => {
     paymentArr.forEach((e, i) => {
+        e._id = (474984668798 + i).toString()
         e.date = dateArr[i]
         e.freq = `2byM`
     })
@@ -364,9 +365,7 @@ export const createInsertData = (status = '', lastBalance, orderNb, installAmoun
     })
 }
 
-export const updateExistData = (transArr, updateLocation, contract) => {
-    let newTransArr= []
-    let currBalance = findlastValidBalance(transArr , updateLocation)
+export const updateExistData = (transArr, updateLocation, contract, currBalance) => {
     let currOrderNb = updateLocation + 1
     transArr.forEach((el, idx) => {
         if (parseFloat(currBalance).toFixed(2) > 0 && idx >= updateLocation) {
@@ -376,22 +375,24 @@ export const updateExistData = (transArr, updateLocation, contract) => {
             let capital = Number(installAmount) - currInterest
             contract.isCreditVariable ? capital -= contract.paymentFees[freqName.text] : ''
             // console.log(parseFloat(currBalance).toFixed(2) < parseFloat(capital).toFixed(2))
-            if (Number(parseFloat(currBalance).toFixed(2)) < Number(parseFloat(capital).toFixed(2))) {
+            if (Number(parseFloat(currBalance).toFixed(2)) < Number(parseFloat(capital).toFixed(2)) && el.status != 'stopPayment') {
                 capital = currBalance
                 currBalance = 0
                 installAmount = capital + currInterest
-            } else {
+            } else if (el.status != 'stopPayment') {
                 currBalance -=  capital
             }
-            newTransArr.push(Object.assign({}, el, {
+            Object.assign(el, {
                 installAmount: parseFloat(installAmount).toFixed(2),
-                interest: parseFloat(currInterest).toFixed(2),
-                capital: parseFloat(capital).toFixed(2),
-                balance: parseFloat(currBalance).toFixed(2),
+                interest: el.status != 'stopPayment' ? parseFloat(currInterest).toFixed(2) : 0,
+                capital: el.status != 'stopPayment' ? parseFloat(capital).toFixed(2) : 0,
+                balance: el.status != 'stopPayment' ? parseFloat(currBalance).toFixed(2) : 0,
                 orderNb: currOrderNb
-            }))
+            })
             currOrderNb++
+        } else if (parseFloat(currBalance).toFixed(2) <= 0 && idx >= updateLocation && el.status != 'stopPayment') {
+            transArr = transArr.filter(de => de._id != el._id)
         }
     })
-    return transArr.filter(trans => transArr.indexOf(trans) < updateLocation).concat(newTransArr)
+    return transArr
 }

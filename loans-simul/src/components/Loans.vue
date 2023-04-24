@@ -24,6 +24,7 @@ const contract = {
     }
 }
 let rebate = {}
+let nfsNumber = 0
 
 let genDateArr = ref(
     genDate({
@@ -57,23 +58,54 @@ const onInit = () => {
     data.value = updateDateToTrans(trans, genDateArr.value)
 }
 
-const addRebate = (rebateData) => {
+const addRebate = (rebateDate, rebateAmount, contractId = '') => {
     //front end
-    const date = rebateData.date
+    const date = rebateDate
     date.split("/")
     let startD = parseInt(date.split("/")[0])
     let startM = parseInt(date.split("/")[1])
     let startY = parseInt(date.split("/")[2])
-    const rebateDate = new Date(startY, startM - 1, startD, 12, 0, 0).getTime()
+    rebateDate = new Date(startY, startM - 1, startD, 12, 0, 0).getTime()
 
-    //BE
+    // //BE
     const [...transArr] = data.value
     const rebateLocation = findProcessionData(transArr, rebateDate)
     const validBalance = findlastValidBalance(transArr, rebateLocation)
-    const createTrans = createInsertData(`rebate`, validBalance, rebateLocation + 1, rebateData.amount, rebateDate, transArr[rebateLocation], contract)
+    const createTrans = createInsertData(`rebate`, validBalance, rebateLocation + 1, rebateAmount, rebateDate, transArr[rebateLocation], contract)
     transArr.splice(rebateLocation , 0, createTrans)
-    let newTransArr = updateExistData(transArr, rebateLocation + 1, contract)
+    let currBalance = findlastValidBalance(transArr , rebateLocation + 1)
+    let newTransArr = updateExistData(transArr, rebateLocation + 1, contract, currBalance)
+    let deleteData = data.value.filter(el => !(newTransArr.find(tr => el._id == tr._id) || {})._id) || []
+    deleteData.forEach(el => { Object.assign(el, {deleted: true})})
     data.value = newTransArr
+    // await transactionServices.updateMultiplesTransaction(newTransArr, {})
+    // await transactionServices.updateMultiplesTransaction(deleteData, {})
+    updateContract(contractId)
+}
+
+const updateContract = (contractId) => {
+    let totalOwing = 0
+    let currentBalance = 0
+    let rebate = 0
+    // const transactionList = await transactionServices.findByInfo({
+    //     contractId: contractId,
+    // })
+    // transactionList.map((el) => {
+        // if (el.status == 'rebate') {
+        //     rebate += Number(parseFloat(el.installAmount).toFixed(2))
+        // }    
+    // })
+    // const unpaidTransaction = transactionList.filter((el) => ["pending", "inProgress"].includes(el.status))
+    // unpaidTransaction.map((el) => {
+    //     totalOwing += Number(parseFloat(el.installAmount).toFixed(2))
+    //     currentBalance += Number(parseFloat(el.capital).toFixed(2))
+    // })
+    // await contractServices.updateById(contractId, { totalOwing: totalOwing, currentBalance: currentBalance, rebate: rebate })
+}
+
+const nsfByNumber = (number) => {
+    const [...transArr] = data.value
+    const fine = 40
 }
 </script>
 
@@ -115,6 +147,11 @@ const addRebate = (rebateData) => {
         <input type="mumber" ref="rebateAmount" class="border w-12" v-model="rebate.amount" />
         <label for="firstDate">rebate date</label>
         <input type="text" ref="rebateDate" class="border w-32" v-model="rebate.date" />
-        <button class="px-2 py-1 border bg-red-200" @click="addRebate(rebate)">rebate</button>
+        <button class="px-2 py-1 border bg-red-200" @click="addRebate(rebate.date, rebate.amount)">rebate</button>
+    </div>
+    <div class="p-3 flex space-x-2 w-full justify-center items-center">
+        <label for="province">NSF number</label>
+        <input type="mumber" ref="rebateAmount" class="border w-12" v-model="nfsNumber" />
+        <button class="px-2 py-1 border bg-red-200" @click="addRebate(nfsNumber)">nsf</button>
     </div>
 </template>
