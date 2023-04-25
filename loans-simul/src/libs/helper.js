@@ -347,11 +347,11 @@ export const findlastValidBalance = (data, location) => {
     return validBalance
 }
 
-export const createInsertData = (status = '', lastBalance, orderNb, installAmount, date, transData, contract) => {
+export const createInsertData = (status = '', lastBalance, orderNb, installAmount, date, transData) => {
     let interest = Number(lastBalance) * 0.29/frequencyObj[transData.freq]
     const freqName = frequencyArr.find((freq) => freq.val == transData.freq)
-    let capital = Number(installAmount) - interest
-    contract.isCreditVariable ? capital -= contract.paymentFees[freqName.text] : ''
+    let capital = Number(installAmount) - interest - transData.fees
+    // contract.isCreditVariable ? capital -= transData.fees : ''
     if (capital + interest > Number(lastBalance)) {
         return
     }
@@ -368,15 +368,15 @@ export const createInsertData = (status = '', lastBalance, orderNb, installAmoun
     })
 }
 
-export const updateExistData = (transArr, updateLocation, contract, currBalance) => {
+export const updateExistData = (transArr, updateLocation, currBalance) => {
     let currOrderNb = updateLocation + 1
     transArr.forEach((el, idx) => {
         if (parseFloat(currBalance).toFixed(2) > 0 && idx >= updateLocation) {
-            const freqName = frequencyArr.find((freq) => freq.val == el.freq)
+            // const freqName = frequencyArr.find((freq) => freq.val == el.freq)
             let installAmount = el.installAmount
             let currInterest = Number(currBalance) * 0.29/frequencyObj[el.freq]
-            let capital = Number(installAmount) - currInterest
-            contract.isCreditVariable ? capital -= contract.paymentFees[freqName.text] : ''
+            let capital = Number(installAmount) - currInterest - el.fees
+            // contract.isCreditVariable ? capital -= el.fees : ''
             // console.log(parseFloat(currBalance).toFixed(2) < parseFloat(capital).toFixed(2))
             if (Number(parseFloat(currBalance).toFixed(2)) < Number(parseFloat(capital).toFixed(2)) && el.status != 'stopPayment') {
                 capital = currBalance
