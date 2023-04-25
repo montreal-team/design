@@ -71,7 +71,8 @@ const addRebate = (rebateDate, rebateAmount, contractId = '') => {
     const [...transArr] = data.value
     const rebateLocation = findProcessionData(transArr, rebateDate)
     const validBalance = findlastValidBalance(transArr, rebateLocation)
-    const createTrans = createInsertData(`rebate`, validBalance, rebateLocation + 1, rebateAmount, rebateDate, transArr[rebateLocation], contract)
+    let createTrans = createInsertData(`rebate`, validBalance, rebateLocation + 1, rebateAmount, rebateDate, transArr[rebateLocation], contract)
+    // createTrans = await transactionServices.create(createTrans)
     transArr.splice(rebateLocation , 0, createTrans)
     let currBalance = findlastValidBalance(transArr , rebateLocation + 1)
     let newTransArr = updateExistData(transArr, rebateLocation + 1, contract, currBalance)
