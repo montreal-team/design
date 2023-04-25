@@ -352,6 +352,9 @@ export const createInsertData = (status = '', lastBalance, orderNb, installAmoun
     const freqName = frequencyArr.find((freq) => freq.val == transData.freq)
     let capital = Number(installAmount) - interest
     contract.isCreditVariable ? capital -= contract.paymentFees[freqName.text] : ''
+    if (capital + interest > Number(lastBalance)) {
+        return
+    }
     let balance = lastBalance - capital
     balance = balance < 0 ? 0 : balance
     return Object.assign({}, transData, {

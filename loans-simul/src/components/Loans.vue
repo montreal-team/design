@@ -72,36 +72,30 @@ const addRebate = (rebateDate, rebateAmount, contractId = '') => {
     const rebateLocation = findProcessionData(transArr, rebateDate)
     const validBalance = findlastValidBalance(transArr, rebateLocation)
     let createTrans = createInsertData(`rebate`, validBalance, rebateLocation + 1, rebateAmount, rebateDate, transArr[rebateLocation], contract)
-    // createTrans = await transactionServices.create(createTrans)
-    transArr.splice(rebateLocation , 0, createTrans)
-    let currBalance = findlastValidBalance(transArr , rebateLocation + 1)
-    let newTransArr = updateExistData(transArr, rebateLocation + 1, contract, currBalance)
-    let deleteData = data.value.filter(el => !(newTransArr.find(tr => el._id == tr._id) || {})._id) || []
-    deleteData.forEach(el => { Object.assign(el, {deleted: true})})
-    data.value = newTransArr
-    // await transactionServices.updateMultiplesTransaction(newTransArr, {})
-    // await transactionServices.updateMultiplesTransaction(deleteData, {})
-    updateContract(contractId)
-}
-
-const updateContract = (contractId) => {
-    let totalOwing = 0
-    let currentBalance = 0
-    let rebate = 0
-    // const transactionList = await transactionServices.findByInfo({
-    //     contractId: contractId,
-    // })
-    // transactionList.map((el) => {
-        // if (el.status == 'rebate') {
-        //     rebate += Number(parseFloat(el.installAmount).toFixed(2))
-        // }    
-    // })
-    // const unpaidTransaction = transactionList.filter((el) => ["pending", "inProgress"].includes(el.status))
-    // unpaidTransaction.map((el) => {
-    //     totalOwing += Number(parseFloat(el.installAmount).toFixed(2))
-    //     currentBalance += Number(parseFloat(el.capital).toFixed(2))
-    // })
-    // await contractServices.updateById(contractId, { totalOwing: totalOwing, currentBalance: currentBalance, rebate: rebate })
+    if (createTrans) {
+        // createTrans = await transactionServices.create(createTrans)
+        transArr.splice(rebateLocation , 0, createTrans)
+        let currBalance = findlastValidBalance(transArr , rebateLocation + 1)
+        let newTransArr = updateExistData(transArr, rebateLocation + 1, contract, currBalance)
+        let deleteData = data.value.filter(el => !(newTransArr.find(tr => el._id == tr._id) || {})._id) || []
+        deleteData.forEach(el => { Object.assign(el, {deleted: true})})
+        data.value = newTransArr
+        // await transactionServices.updateMultiplesTransaction(newTransArr, {})
+        // await transactionServices.updateMultiplesTransaction(deleteData, {})
+        let totalOwing = 0
+        let currentBalance = 0
+        let rebate = 0
+        newTransArr.map((el) => {
+            if (el.status == 'rebate') {
+                rebate += Number(parseFloat(el.installAmount).toFixed(2))
+            }   
+            if (["pending", "inProgress"].includes(el.status)) {
+                    totalOwing += Number(parseFloat(el.installAmount).toFixed(2))
+                    currentBalance += Number(parseFloat(el.capital).toFixed(2))
+            } 
+        })
+        // await contractServices.updateById(contractId, { totalOwing: totalOwing, currentBalance: currentBalance, rebate: rebate })
+    }
 }
 
 const nsfByNumber = (number) => {
