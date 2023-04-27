@@ -430,7 +430,8 @@ export const createNewData = (lastPayment) => {
             capital: parseFloat(capital),
             balance: parseFloat(currBalance),
             orderNb: nextOrderNb,
-            date: nextDate
+            date: nextDate,
+            fees: 0
         }))
         nextOrderNb++
     }
