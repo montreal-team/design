@@ -318,11 +318,14 @@ export const genDate = ({ firstDate, secondDate, startPayDate, totalsSeqNb = 1, 
     return fList
 }
 
-export const updateDateToTrans = (paymentArr, dateArr) => {
+export const updateDateToTrans = (paymentArr, dateArr, firstDate = 0, secondDate = 0,) => {
     paymentArr.forEach((e, i) => {
         e._id = (474984668798 + i).toString()
         e.date = dateArr[i]
         e.freq = `2byM`
+        e.setupAmount = e.installAmount
+        e.firstPayDate = firstDate
+        e.secondPayDate = secondDate
     })
     console.log(paymentArr)
     console.log(dateArr)
@@ -341,18 +344,22 @@ export const findlastValidBalance = (data, location) => {
         trans = data.find((element) => parseFloat(element.balance).toFixed(2) > 0);
         validBalance = Number(trans.balance) + Number(trans.capital)
     } else {
-        trans = data.findLast((element, idx) => (element.status != 'stopPayment') && idx < location);
+        trans = data.findLast((element, idx) => (element.description != 'deferredPayment') && idx < location);
         validBalance = Number(trans.balance)
     }
     return validBalance
 }
 
 export const createInsertData = (status = '', lastBalance, orderNb, installAmount, date, transData) => {
-    let interest = Number(lastBalance) * 0.29/frequencyObj[transData.freq]
+    let interest = parseFloat(Number(lastBalance) * 0.29/frequencyObj[transData.freq])
     const freqName = frequencyArr.find((freq) => freq.val == transData.freq)
-    let capital = Number(installAmount) - interest - transData.fees
+    let capital = Number(installAmount) -  Number(interest)
     // contract.isCreditVariable ? capital -= transData.fees : ''
-    if (capital + interest > Number(lastBalance)) {
+    // if (capital +  Number(interest) > Number(lastBalance) || parseFloat(capital).toFixed(2) < 0) {
+    //     return
+    // }
+    // let capital = Number(installAmount) -  Number(interest) - transData.fees
+    if (capital +  Number(interest) > Number(lastBalance)) {
         return
     }
     let balance = lastBalance - capital
@@ -362,18 +369,18 @@ export const createInsertData = (status = '', lastBalance, orderNb, installAmoun
         orderNb: orderNb,
         installAmount: installAmount,
         date: date,
-        interest: parseFloat(interest).toFixed(2),
-        capital: parseFloat(capital).toFixed(2),
-        balance: parseFloat(balance).toFixed(2),
+        interest: parseFloat(interest),
+        capital: parseFloat(capital),
+        balance: parseFloat(balance),
     })
 }
 
 export const updateExistData = (transArr, updateLocation, currBalance) => {
-    let currOrderNb = updateLocation + 1
-    transArr.forEach((el, idx) => {
+    let [...newTransArr] = transArr
+    newTransArr.forEach((el, idx) => {
         if (parseFloat(currBalance).toFixed(2) > 0 && idx >= updateLocation) {
             // const freqName = frequencyArr.find((freq) => freq.val == el.freq)
-            let installAmount = el.installAmount
+            let installAmount = el.setupAmount
             let currInterest = Number(currBalance) * 0.29/frequencyObj[el.freq]
             let capital = Number(installAmount) - currInterest - el.fees
             // contract.isCreditVariable ? capital -= el.fees : ''
@@ -381,21 +388,99 @@ export const updateExistData = (transArr, updateLocation, currBalance) => {
             if (Number(parseFloat(currBalance).toFixed(2)) < Number(parseFloat(capital).toFixed(2)) && el.status != 'stopPayment') {
                 capital = currBalance
                 currBalance = 0
-                installAmount = capital + currInterest
+                installAmount = capital + currInterest + Number(el.fees)
             } else if (el.status != 'stopPayment') {
                 currBalance -=  capital
             }
             Object.assign(el, {
-                installAmount: parseFloat(installAmount).toFixed(2),
-                interest: el.status != 'stopPayment' ? parseFloat(currInterest).toFixed(2) : 0,
-                capital: el.status != 'stopPayment' ? parseFloat(capital).toFixed(2) : 0,
-                balance: el.status != 'stopPayment' ? parseFloat(currBalance).toFixed(2) : 0,
-                orderNb: currOrderNb
+                installAmount: parseFloat(installAmount),
+                interest: el.status != 'stopPayment' ? parseFloat(currInterest) : 0,
+                capital: el.status != 'stopPayment' ? parseFloat(capital) : 0,
+                balance: el.status != 'stopPayment' ? parseFloat(currBalance) : 0,
+                orderNb: idx + 1,
+                date: transArr[idx].date
             })
-            currOrderNb++
         } else if (parseFloat(currBalance).toFixed(2) <= 0 && idx >= updateLocation && el.status != 'stopPayment') {
-            transArr = transArr.filter(de => de._id != el._id)
+            newTransArr = newTransArr.filter(de => de._id != el._id)
         }
     })
-    return transArr
+    return newTransArr
+}
+
+export const createNewData = (lastPayment) => {
+    let currBalance = lastPayment.balance
+    let nextDate = lastPayment.date
+    let newTransArr = []
+    let nextOrderNb = lastPayment.orderNb + 1
+    while(parseFloat(currBalance).toFixed(2) > 0) {
+        let installAmount = lastPayment.setupAmount
+        let currInterest = Number(currBalance) * 0.29/frequencyObj[lastPayment.freq]
+        let capital = Number(installAmount) - currInterest - lastPayment.fees
+        if (Number(parseFloat(currBalance).toFixed(2)) < Number(parseFloat(capital).toFixed(2))) {
+            capital = currBalance
+            installAmount = Number(capital) + Number(currInterest) + Number(lastPayment.fees)
+            currBalance = 0
+        } else {
+            currBalance -=  capital
+        }
+        nextDate = getOneTransDateFunc("2byM", lastPayment, 'qc', nextDate)
+        newTransArr.push(Object.assign({}, lastPayment, {
+            installAmount: parseFloat(installAmount),
+            interest: parseFloat(currInterest),
+            capital: parseFloat(capital),
+            balance: parseFloat(currBalance),
+            orderNb: nextOrderNb,
+            date: nextDate
+        }))
+        nextOrderNb++
+    }
+    return newTransArr
+}
+
+const getOneTransDateFunc = (
+    paymentFrequency = "",
+    lastTrans = {},
+    province,
+    startDate = 0
+) => {
+    let date = 0
+    if (paymentFrequency == "2byM") {
+        console.log(lastTrans)
+        const firstDate = lastTrans.firstPayDate
+        const secondDate = lastTrans.secondPayDate
+        const openDate = new Date(startDate).getDate()
+        const currDate = new Date(startDate)
+        let newDate = 0
+        let newMonth = currDate
+        const lastDay = new Date(newMonth.getFullYear(), newMonth.getMonth() + 1, 0, 12, 0, 0)
+        if (openDate < firstDate || openDate >= secondDate || openDate == lastDay.getDate()) {
+            newDate = firstDate
+        } else {
+            newDate = secondDate
+        }
+        newDate > lastDay.getDate() ? (newDate = lastDay.getDate()) : ""
+        date = new Date(new Date(newMonth).getFullYear(), new Date(newMonth).getMonth(), newDate, 12, 0, 0).getTime()
+        let validDate = findValidDate(
+            {
+                d: new Date(date).getDate(),
+                m: new Date(date).getMonth() + 1,
+                y: new Date(date).getFullYear(),
+            },
+            province
+        )
+        date = new Date(validDate.y, validDate.m - 1, validDate.d, 12, 0, 0).getTime()
+    } else {
+        const timeRef = timeReferenceObj
+        date = startDate ? startDate : lastTrans.date + 86400 * timeRef[paymentFrequency] * 1000
+        let validDate = findValidDate(
+            {
+                d: new Date(date).getDate(),
+                m: new Date(date).getMonth() + 1,
+                y: new Date(date).getFullYear(),
+            },
+            province
+        )
+        date = new Date(validDate.y, validDate.m - 1, validDate.d, 12, 0, 0).getTime()
+    }
+    return date
 }

@@ -1,9 +1,10 @@
 <script setup>
-import { frequencyObj, timeReferenceObj, genTrans, getDateString, genDate, updateDateToTrans, findProcessionData,  findlastValidBalance, createInsertData, updateExistData } from "../libs/helper"
+import { frequencyObj, timeReferenceObj, genTrans, getDateString, genDate, updateDateToTrans, findProcessionData,  findlastValidBalance, createInsertData, updateExistData, createNewData } from "../libs/helper"
 import { ref, reactive } from "vue"
 const count = ref(0)
 const headers = ["orderNb", "date", "installAmount", "interest", "capital", "fees", "balance", "status"]
 const textheaders = ["nb", "date", "amount", "interest", "capital", "fees", "balance", "status"]
+let validateRebate = ref(false)
 const genParm = reactive({
     province: "Quebec",
     firstDate: 5,
@@ -25,6 +26,7 @@ const contract = {
 }
 let rebate = {}
 let nfsNumber = 0
+let revertNumber = 0
 
 let genDateArr = ref(
     genDate({
@@ -37,7 +39,7 @@ let genDateArr = ref(
 )
 
 let data = ref(genTrans({ totalsSeqNb: genParm.nb, amt: genParm.amt, fees: genParm.fees, freq: genParm.freq }))
-data.value = updateDateToTrans(data.value, genDateArr.value)
+data.value = updateDateToTrans(data.value, genDateArr.value, genParm.firstDate, genParm.secondDate)
 const onInit = () => {
     let trans = genTrans({
         firstDate: genParm.firstDate,
@@ -55,8 +57,9 @@ const onInit = () => {
         totalsSeqNb: genParm.nb,
         province: "Quebec",
     })
-    data.value = updateDateToTrans(trans, genDateArr.value)
+    data.value = updateDateToTrans(trans, genDateArr.value, genParm.firstDate, genParm.secondDate)
 }
+console.log(data.value)
 
 const addRebate = (rebateDate, rebateAmount, contractId = '') => {
     //front end
@@ -95,12 +98,34 @@ const addRebate = (rebateDate, rebateAmount, contractId = '') => {
             } 
         })
         // await contractServices.updateById(contractId, { totalOwing: totalOwing, currentBalance: currentBalance, rebate: rebate })
+    } else { validateRebate.value = true }
+}
+
+const revertRebate = (revertNumber, revertId) => {
+    let [...transArr] = data.value
+    let newTransArr = []
+    const rebateIndex = transArr.findIndex(el => el.orderNb == revertNumber)
+    const validBalance = findlastValidBalance(transArr, rebateIndex)
+    transArr.splice(rebateIndex, 1)
+    newTransArr = updateExistData(transArr, rebateIndex, validBalance)
+    const lastPayment = newTransArr.findLast((element) => element.description != 'deferredPayment');
+    if (parseFloat(lastPayment.installAmount).toFixed(2) > 0) {
+        const newPayment = createNewData(lastPayment)
+        console.log(newTransArr)
+        newTransArr = newTransArr.concat(newPayment)
     }
+    data.value = newTransArr
 }
 
 const nsfByNumber = (number) => {
-    const [...transArr] = data.value
+    let [...transArr] = data.value
     const fine = 40
+    let objIndex = transArr.findIndex((obj => obj.orderNb == number));
+    const obj = transArr[objIndex]
+    Object.assign(transArr[objIndex], {installAmount: '0', interest: '0', capital: `-${fine + Number(obj.interest)}`, balance: `${Number(obj.balance) + fine + Number(obj.interest)}`})
+    console.log(objIndex)
+    let newTransArr = updateExistData(transArr, objIndex + 1, Number(obj.balance) + fine + Number(obj.interest))
+    data.value = newTransArr
 }
 </script>
 
@@ -132,7 +157,7 @@ const nsfByNumber = (number) => {
         <div>
             <div v-for="row in data" class="flex space-x-2">
                 <div v-for="h in headers" class="min-w-tab content-start">
-                    {{ h == "date" ? getDateString(row[h]) : row[h] }}
+                    {{ h == "date" ? getDateString(row[h]) : ['installAmount', 'interest', 'capital', 'balance'].includes(h) ? parseFloat(row[h]).toFixed(2) : row[h] }}
                 </div>
             </div>
         </div>
@@ -143,10 +168,14 @@ const nsfByNumber = (number) => {
         <label for="firstDate">rebate date</label>
         <input type="text" ref="rebateDate" class="border w-32" v-model="rebate.date" />
         <button class="px-2 py-1 border bg-red-200" @click="addRebate(rebate.date, rebate.amount)">rebate</button>
+        <p v-if="validateRebate" style="color: red">error validate</p>
+        <label for="province">revert  number</label>
+        <input type="mumber" ref="rebateAmount" class="border w-12" v-model="revertNumber" />
+        <button class="px-2 py-1 border bg-red-200" @click="revertRebate(revertNumber)">revert </button>
     </div>
     <div class="p-3 flex space-x-2 w-full justify-center items-center">
         <label for="province">NSF number</label>
         <input type="mumber" ref="rebateAmount" class="border w-12" v-model="nfsNumber" />
-        <button class="px-2 py-1 border bg-red-200" @click="addRebate(nfsNumber)">nsf</button>
+        <button class="px-2 py-1 border bg-red-200" @click="nsfByNumber(nfsNumber)">nsf</button>
     </div>
 </template>
