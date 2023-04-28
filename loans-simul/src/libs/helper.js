@@ -1,5 +1,41 @@
 import moment from "moment"
 import Holidays from "date-holidays"
+
+// check if weekend
+const isWeekend = (d, m, y) => {
+    let day = new Date(y, m - 1, d).getDay()
+    return [0, 6].includes(day)
+}
+
+// num to string
+const nbToStr = (nb) => {
+    return nb < 10 ? `0${nb}` : `${nb}`
+}
+
+// get date in string format dd/mm/yyyy. input date i unix time number 
+export const getDDMMYYYYStr = (date) => {
+    let dateObj = new Date(date)
+    let yyyy = dateObj.getFullYear()
+    let mm = dateObj.getMonth() + 1
+    let dd = dateObj.getDate()
+    return `${nbToStr(dd)}/${nbToStr(mm)}/${yyyy}`
+}
+
+// 
+export const getDDMMYYYY = (date) => {
+    let dateObj = new Date(date)
+    let yyyy = dateObj.getFullYear()
+    let mm = dateObj.getMonth() + 1
+    let dd = dateObj.getDate()
+    return {d: dd, m: mm, y: yyyy}
+}
+
+// convert number or string to 2 decimal number
+export const toFixed2 = (nb) => {
+    return parseFloat(nb) ? parseFloat(nb).toFixed(2) : 0.00
+}
+
+// nubmer of weeks by option
 export const frequencyObj = {
     "1w": 52,
     "2w": 26,
@@ -7,21 +43,16 @@ export const frequencyObj = {
     "2byM": 26,
 }
 
+// number of day between 2 payment sequence date
 export const timeReferenceObj = {
     "1w": 7,
     "2w": 14,
-    "1M": parseFloat(91 / 3).toFixed(2),
+    "1M": toFixed2(91.0/3.0),
     "2byM": 14,
 }
 
-export const paymentFeesObj = {
-    "1w": 1,
-    "2w": 2,
-    "1M": 4,
-    "2byM": 2,
-}
-
-export const frequencyArr = [
+// frequency name list 
+export const freqOptions = [
     {
         text: "everyWeek",
         val: "1w",
@@ -40,67 +71,8 @@ export const frequencyArr = [
     },
 ]
 
-export const genTrans = ({ intRate = 0.29, freq = 52.0, fees = 0, totalsSeqNb = 1, amt = 0 }) => {
-    let singleInt = intRate / freq
-    const amount = amt - fees
-    let balance = (amount * (1.0 - 1.0 / Math.pow(1.0 + singleInt, totalsSeqNb))) / singleInt
-    let trans = []
-    let idx = 0
-    while (parseFloat(balance).toFixed(2) > 0) {
-        console.log(parseFloat(balance).toFixed(2))
-        idx++
-        let interest = balance * singleInt
-        let capital = amt - interest - fees
-        balance = balance - capital
-        balance = balance < 0 ? 0 : balance
-        trans.push({
-            orderNb: idx,
-            date: "",
-            installAmount: amt, interest: parseFloat(interest).toFixed(2),
-            capital: parseFloat(capital).toFixed(2),
-            fees,
-            balance: parseFloat(balance).toFixed(2),
-            status: "",
-        })
-    }
-    return trans
-}
 
-export const genAdditionalTrans = ({
-    orderNbInput = 1,
-    balanceInput = 0,
-    intRate = 0.29,
-    freq = 52.0,
-    fees = 0,
-    amt = 0,
-}) => {
-    let singleInt = intRate / freq
-    const amount = amt - fees
-    let balance = balanceInput
-    let trans = []
-    let idx = orderNbInput
-    /// update code here .....
-    // while (parseFloat(balance).toFixed(2) > 0) {
-    //     console.log(parseFloat(balance).toFixed(2))
-    //     idx++
-    //     let interest = balance * singleInt
-    //     let capital = amt - interest - fees
-    //     balance = balance - capital
-    //     balance = balance < 0 ? 0 : balance
-    //     trans.push({
-    //         orderNb: idx,
-    //         date: "",
-    //         installAmount: amt,
-    //         interest: parseFloat(interest).toFixed(2),
-    //         capital: parseFloat(capital).toFixed(2),
-    //         fees,
-    //         balance: parseFloat(balance).toFixed(2),
-    //         status: "",
-    //     })
-    // }
-    return trans
-}
-
+// list of provinces used for holiday days callculation
 const provinceArr = [
     {
         text: "Alberta",
@@ -156,6 +128,7 @@ const provinceArr = [
     },
 ]
 
+// init object for libs used to determine holidays
 const setupHolidayObj = (provinceLowerCase) => {
     var hd = new Holidays("CA", provinceLowerCase, { languages: "en", types: "public" })
     hd.unsetRule("easter") //remove Easter Sunday rule
@@ -202,8 +175,8 @@ const setupHolidayObj = (provinceLowerCase) => {
     return hd
 }
 
-// find list of next date from start day for the case of 2 time by month
-const findNextDate = (
+// find list of next date from start day for the case of twice by month
+const findNextDate2byM = (
     startPaymentD,
     startPaymentM,
     startPaymentY,
@@ -232,17 +205,27 @@ const findNextDate = (
         M = 1
         Y += 1
     }
-    findNextDate(D, M, Y, F, S, list, totalsSeqNb)
+    findNextDate2byM(D, M, Y, F, S, list, totalsSeqNb)
 }
-export const getDateString = (date) => {
-    console.log(date)
-    let yyyy = new Date(date).getFullYear()
-    let mm = new Date(date).getMonth() + 1
-    mm = mm < 10 ? `0${mm}` : mm
-    let dd = new Date(date).getDate()
-    dd = dd < 10 ? `0${dd}` : dd
-    return `${dd}/${mm}/${yyyy}`
+
+// find next date for other case 
+const findNextDate = (
+    startPaymentD,
+    startPaymentM,
+    startPaymentY,
+    list,
+    totalsSeqNb,
+    freq = '1w'
+) => {
+    if (list.length == totalsSeqNb) return
+    let startTime = new Date(startPaymentY, startPaymentM - 1, startPaymentD, 12).getTime()
+    let nextTime = startTime + timeReferenceObj[freq] * 24*60*60*1000
+    let nextDateObj = new Date(nextTime);
+    let {d, m, y} = getDDMMYYYY(nextDateObj)
+    list.push({ d, m, y})
+    findNextDate(d, m, y, list, totalsSeqNb, freq)
 }
+
 export const getCaHolidays = (currYear, province) => {
     var provinceLowerCase = ((provinceArr.filter((e) => e.text.toLowerCase() == province.toLowerCase()) || [])[0] || {})
         .slugLowerCase
@@ -250,22 +233,17 @@ export const getCaHolidays = (currYear, province) => {
     let holidays = hd
         .getHolidays(currYear)
         .filter((date) => date.type == "public")
-        .map((res) => getDateString(res.date))
+        .map((res) => getDDMMYYYYStr(res.date))
     return holidays
 }
 
-const isWeeken = (d, m, y) => {
-    let day = new Date(y, m - 1, d).getDay()
-    return [0, 6].includes(day)
-}
+// check if holiday
 const isHoliday = (d, m, y, province) => {
-    let dStr = d < 10 ? `0${d}` : d
-    let mStr = m < 10 ? `0${m}` : m
-    return getCaHolidays(y, province).includes(`${dStr}/${mStr}/${y}`)
+    return getCaHolidays(y, province).includes(`${nbToStr(d)}/${nbToStr(m)}/${y}`)
 }
 
 const findPrevValidDate = ({ d, m, y }, province) => {
-    if (isWeeken(d, m, y) || isHoliday(d, m, y, province)) {
+    if (isWeekend(d, m, y) || isHoliday(d, m, y, province)) {
         return findPrevValidDate({ d: d - 1, m, y }, province)
     } else {
         return { d, m, y }
@@ -273,11 +251,9 @@ const findPrevValidDate = ({ d, m, y }, province) => {
 }
 // find next valid date with check of weekend and holiday for 1 given date
 const findValidDate = ({ d, m, y }, province) => {
-    let dStr = d < 10 ? `0${d}` : d
-    let mStr = m < 10 ? `0${m}` : m
     // if normal date of current month/year
-    if (moment(`${mStr}/${dStr}/${y}`, "MM/DD/YYYY", true).isValid()) {
-        if (isWeeken(d, m, y) || isHoliday(d, m, y, province)) {
+    if (moment(`${nbToStr(m)}/${nbToStr(d)}/${y}`, "MM/DD/YYYY", true).isValid()) {
+        if (isWeekend(d, m, y) || isHoliday(d, m, y, province)) {
             return findValidDate({ d: d + 1, m, y }, province)
         } else {
             return { d, m, y }
@@ -289,46 +265,112 @@ const findValidDate = ({ d, m, y }, province) => {
     }
 }
 
-export const genDate = ({ firstDate, secondDate, startPayDate, totalsSeqNb = 1, province }) => {
-    let F = firstDate
-    let S = secondDate
 
-    // let startDate = new Date(startPayDate)
 
-    // let startD = startDate.getDate()\
-    // let startM = startDate.getMonth() + 1
-    // let startY = startDate.getFullYear()
-    console.log("startPayDate.split=> ", startPayDate.split("/"))
+// generate init transaction, that will be use when create contract
+// commonData = { // common data that related to contract info  
+//     companyId: 'companyId', 
+//     branchId: 'branchId', 
+//     clientProfileId: 'clientProfileId', 
+//     clientId: 'clientId', 
+//     demandId: 'demandId',
+//     contractId: 'contractId'
+// }
+export const genTrans = ({ intRate = 0.29, freq = '1w', fees = 0, totalsSeqNb = 1, amt = 0, commonData = {} }) => {
+    
+    if (!intRate || totalsSeqNb <1 || !frequencyObj[freq]) return []
+    let singleInt = intRate / frequencyObj[freq]
+    const amount = amt - fees
+    let balance = (amount * (1.0 - 1.0 / Math.pow(1.0 + singleInt, totalsSeqNb))) / singleInt
+    let trans = []
+    let idx = 0
+    while (toFixed2(balance) > 0) {
+        idx++
+        let interest = balance * singleInt
+        let capital = amt - interest - fees
+        balance = balance - capital
+        balance = balance < 0 ? 0 : balance
+        trans.push(
+            Object.assign({}, commonData, {
+                _id: idx,
+                orderNb: idx,
+                date: 0,
+                installAmount: amt, 
+                setupAmount: amt,
+                interest: toFixed2(interest),
+                capital: toFixed2(capital),
+                fees,
+                balance: toFixed2(balance),
+                status: "in progess"
+            })
+        )
+    }
+
+    return trans
+}
+
+// generate date for initial list
+export const genDate = ({ freq = '1w', firstDate = 5, secondDate= 15, startPayDate, totalsSeqNb = 1, province }) => {
     let startD = parseInt(startPayDate.split("/")[0])
     let startM = parseInt(startPayDate.split("/")[1])
     let startY = parseInt(startPayDate.split("/")[2])
 
-    console.log(startD, startM, startY)
     let list = []
-    findNextDate(startD, startM, startY, firstDate, secondDate, list, totalsSeqNb)
+    if (freq == '2byM') {
+        findNextDate2byM(startD, startM, startY, firstDate, secondDate, list, totalsSeqNb)
+    } else {
+        findNextDate(startD, startM, startY, list, totalsSeqNb, freq)
+    }
 
     let fList = []
-
     list.forEach((e) => {
         fList.push(findValidDate({ d: e.d, m: e.m, y: e.y }, province))
     })
-    fList = fList.map((d) => {
-        return new Date(d.y, d.m - 1, d.d, 12, 0, 0).getTime()
+    fList = fList.map((date) => {
+        return new Date(date.y, date.m - 1, date.d, 12).getTime()
     })
     return fList
+    
 }
 
-export const updateDateToTrans = (paymentArr, dateArr, firstDate = 0, secondDate = 0,) => {
-    paymentArr.forEach((e, i) => {
-        e._id = (474984668798 + i).toString()
-        e.date = dateArr[i]
-        e.freq = `2byM`
-        e.setupAmount = e.installAmount
-        e.firstPayDate = firstDate
-        e.secondPayDate = secondDate
-    })
-    console.log(paymentArr)
-    console.log(dateArr)
+export const genAdditionalTrans = ({
+    orderNbInput = 1,
+    balanceInput = 0,
+    intRate = 0.29,
+    freq = 52.0,
+    fees = 0,
+    amt = 0,
+}) => {
+    let singleInt = intRate / freq
+    const amount = amt - fees
+    let balance = balanceInput
+    let trans = []
+    let idx = orderNbInput
+    /// update code here .....
+    // while (toFixed2(balance) > 0) {
+    //     console.log(toFixed2(balance))
+    //     idx++
+    //     let interest = balance * singleInt
+    //     let capital = amt - interest - fees
+    //     balance = balance - capital
+    //     balance = balance < 0 ? 0 : balance
+    //     trans.push({
+    //         orderNb: idx,
+    //         date: "",
+    //         installAmount: amt,
+    //         interest: toFixed2(interest),
+    //         capital: toFixed2(capital),
+    //         fees,
+    //         balance: toFixed2(balance),
+    //         status: "",
+    //     })
+    // }
+    return trans
+}
+
+
+export const updateDateToTrans = (paymentArr, dateArr) => {
+    paymentArr.forEach((e, i) => {e.date = dateArr[i]})
     return paymentArr
 }
 
@@ -341,7 +383,7 @@ export const findlastValidBalance = (data, location) => {
     let trans = {}
     let validBalance = 0
     if (!location) {
-        trans = data.find((element) => parseFloat(element.balance).toFixed(2) > 0);
+        trans = data.find((element) => toFixed2(element.balance) > 0);
         validBalance = Number(trans.balance) + Number(trans.capital)
     } else {
         trans = data.findLast((element, idx) => (element.description != 'deferredPayment') && idx < location);
@@ -351,11 +393,11 @@ export const findlastValidBalance = (data, location) => {
 }
 
 export const createInsertData = (status = '', lastBalance, orderNb, installAmount, date, transData) => {
-    let interest = parseFloat(Number(lastBalance) * 0.29/frequencyObj[transData.freq])
-    const freqName = frequencyArr.find((freq) => freq.val == transData.freq)
+    let interest = toFixed2(Number(lastBalance) * 0.29/frequencyObj[transData.freq])
+    const freqName = freqOptions.find((freq) => freq.val == transData.freq)
     let capital = Number(installAmount) -  Number(interest)
     // contract.isCreditVariable ? capital -= transData.fees : ''
-    // if (capital +  Number(interest) > Number(lastBalance) || parseFloat(capital).toFixed(2) < 0) {
+    // if (capital +  Number(interest) > Number(lastBalance) || toFixed2(capital) < 0) {
     //     return
     // }
     // let capital = Number(installAmount) -  Number(interest) - transData.fees
@@ -369,23 +411,23 @@ export const createInsertData = (status = '', lastBalance, orderNb, installAmoun
         orderNb: orderNb,
         installAmount: installAmount,
         date: date,
-        interest: parseFloat(interest),
-        capital: parseFloat(capital),
-        balance: parseFloat(balance),
+        interest: toFixed2(interest),
+        capital: toFixed2(capital),
+        balance: toFixed2(balance),
     })
 }
 
 export const updateExistData = (transArr, updateLocation, currBalance) => {
     let [...newTransArr] = transArr
     newTransArr.forEach((el, idx) => {
-        if (parseFloat(currBalance).toFixed(2) > 0 && idx >= updateLocation) {
+        if (toFixed2(currBalance) > 0 && idx >= updateLocation) {
             // const freqName = frequencyArr.find((freq) => freq.val == el.freq)
             let installAmount = el.setupAmount
             let currInterest = Number(currBalance) * 0.29/frequencyObj[el.freq]
             let capital = Number(installAmount) - currInterest - el.fees
             // contract.isCreditVariable ? capital -= el.fees : ''
-            // console.log(parseFloat(currBalance).toFixed(2) < parseFloat(capital).toFixed(2))
-            if (Number(parseFloat(currBalance).toFixed(2)) < Number(parseFloat(capital).toFixed(2)) && el.status != 'stopPayment') {
+            // console.log(toFixed2(currBalance) < toFixed2(capital))
+            if (Number(toFixed2(currBalance)) < Number(toFixed2(capital)) && el.status != 'stopPayment') {
                 capital = currBalance
                 currBalance = 0
                 installAmount = capital + currInterest + Number(el.fees)
@@ -393,14 +435,14 @@ export const updateExistData = (transArr, updateLocation, currBalance) => {
                 currBalance -=  capital
             }
             Object.assign(el, {
-                installAmount: parseFloat(installAmount),
-                interest: el.status != 'stopPayment' ? parseFloat(currInterest) : 0,
-                capital: el.status != 'stopPayment' ? parseFloat(capital) : 0,
-                balance: el.status != 'stopPayment' ? parseFloat(currBalance) : 0,
+                installAmount: toFixed2(installAmount),
+                interest: el.status != 'stopPayment' ? toFixed2(currInterest) : 0,
+                capital: el.status != 'stopPayment' ? toFixed2(capital) : 0,
+                balance: el.status != 'stopPayment' ? toFixed2(currBalance) : 0,
                 orderNb: idx + 1,
                 date: transArr[idx].date
             })
-        } else if (parseFloat(currBalance).toFixed(2) <= 0 && idx >= updateLocation && el.status != 'stopPayment') {
+        } else if (toFixed2(currBalance) <= 0 && idx >= updateLocation && el.status != 'stopPayment') {
             newTransArr = newTransArr.filter(de => de._id != el._id)
         }
     })
@@ -412,11 +454,11 @@ export const createNewData = (lastPayment) => {
     let nextDate = lastPayment.date
     let newTransArr = []
     let nextOrderNb = lastPayment.orderNb + 1
-    while(parseFloat(currBalance).toFixed(2) > 0) {
+    while(toFixed2(currBalance) > 0) {
         let installAmount = lastPayment.setupAmount
         let currInterest = Number(currBalance) * 0.29/frequencyObj[lastPayment.freq]
         let capital = Number(installAmount) - currInterest - lastPayment.fees
-        if (Number(parseFloat(currBalance).toFixed(2)) < Number(parseFloat(capital).toFixed(2))) {
+        if (Number(toFixed2(currBalance)) < Number(toFixed2(capital))) {
             capital = currBalance
             installAmount = Number(capital) + Number(currInterest) + Number(lastPayment.fees)
             currBalance = 0
@@ -425,10 +467,10 @@ export const createNewData = (lastPayment) => {
         }
         nextDate = getOneTransDateFunc("2byM", lastPayment, 'qc', nextDate)
         newTransArr.push(Object.assign({}, lastPayment, {
-            installAmount: parseFloat(installAmount),
-            interest: parseFloat(currInterest),
-            capital: parseFloat(capital),
-            balance: parseFloat(currBalance),
+            installAmount: toFixed2(installAmount),
+            interest: toFixed2(currInterest),
+            capital: toFixed2(capital),
+            balance: toFixed2(currBalance),
             orderNb: nextOrderNb,
             date: nextDate,
             fees: 0
@@ -446,7 +488,6 @@ const getOneTransDateFunc = (
 ) => {
     let date = 0
     if (paymentFrequency == "2byM") {
-        console.log(lastTrans)
         const firstDate = lastTrans.firstPayDate
         const secondDate = lastTrans.secondPayDate
         const openDate = new Date(startDate).getDate()
