@@ -30,6 +30,14 @@ export const getDDMMYYYY = (date) => {
     return {d: dd, m: mm, y: yyyy}
 }
 
+// get unix time from dd/mm/yy
+export const getUnixTime = (date) => {
+    const dateArr = date.split("/")
+    let d = parseInt(dateArr[0])
+    let m = parseInt(dateArr[1])
+    let y = parseInt(dateArr[2])
+    return new Date(y, m - 1, d, 12).getTime()
+}
 // convert number or string to 2 decimal number
 export const toFixed2 = (nb) => {
     return parseFloat(nb) ? parseFloat(nb).toFixed(2) : 0.00
@@ -277,7 +285,6 @@ const findValidDate = ({ d, m, y }, province) => {
 //     contractId: 'contractId'
 // }
 export const genTrans = ({ intRate = 0.29, freq = '1w', fees = 0, totalsSeqNb = 1, amt = 0, commonData = {} }) => {
-    
     if (!intRate || totalsSeqNb <1 || !frequencyObj[freq]) return []
     let singleInt = intRate / frequencyObj[freq]
     const amount = amt - fees
@@ -295,6 +302,7 @@ export const genTrans = ({ intRate = 0.29, freq = '1w', fees = 0, totalsSeqNb = 
                 _id: idx,
                 orderNb: idx,
                 date: 0,
+                freq,
                 installAmount: amt, 
                 setupAmount: amt,
                 interest: toFixed2(interest),
@@ -309,111 +317,61 @@ export const genTrans = ({ intRate = 0.29, freq = '1w', fees = 0, totalsSeqNb = 
     return trans
 }
 
-// generate date for initial list
+// generate date for initial list when create contract
 export const genDate = ({ freq = '1w', firstDate = 5, secondDate= 15, startPayDate, totalsSeqNb = 1, province }) => {
     let startD = parseInt(startPayDate.split("/")[0])
     let startM = parseInt(startPayDate.split("/")[1])
     let startY = parseInt(startPayDate.split("/")[2])
-
-    let list = []
+    let listDate = []
     if (freq == '2byM') {
-        findNextDate2byM(startD, startM, startY, firstDate, secondDate, list, totalsSeqNb)
+        findNextDate2byM(startD, startM, startY, firstDate, secondDate, listDate, totalsSeqNb)
     } else {
-        findNextDate(startD, startM, startY, list, totalsSeqNb, freq)
+        findNextDate(startD, startM, startY, listDate, totalsSeqNb, freq)
     }
-
-    let fList = []
-    list.forEach((e) => {
-        fList.push(findValidDate({ d: e.d, m: e.m, y: e.y }, province))
+    let validListDate = []
+    listDate.forEach((e) => {
+        validListDate.push(findValidDate({ d: e.d, m: e.m, y: e.y }, province))
     })
-    fList = fList.map((date) => {
+    validListDate = validListDate.map((date) => {
         return new Date(date.y, date.m - 1, date.d, 12).getTime()
     })
-    return fList
-    
+    return validListDate
 }
-
-export const genAdditionalTrans = ({
-    orderNbInput = 1,
-    balanceInput = 0,
-    intRate = 0.29,
-    freq = 52.0,
-    fees = 0,
-    amt = 0,
-}) => {
-    let singleInt = intRate / freq
-    const amount = amt - fees
-    let balance = balanceInput
-    let trans = []
-    let idx = orderNbInput
-    /// update code here .....
-    // while (toFixed2(balance) > 0) {
-    //     console.log(toFixed2(balance))
-    //     idx++
-    //     let interest = balance * singleInt
-    //     let capital = amt - interest - fees
-    //     balance = balance - capital
-    //     balance = balance < 0 ? 0 : balance
-    //     trans.push({
-    //         orderNb: idx,
-    //         date: "",
-    //         installAmount: amt,
-    //         interest: toFixed2(interest),
-    //         capital: toFixed2(capital),
-    //         fees,
-    //         balance: toFixed2(balance),
-    //         status: "",
-    //     })
-    // }
-    return trans
-}
-
-
+// update date list to data list when generate data list for first time (create contract)
 export const updateDateToTrans = (paymentArr, dateArr) => {
     paymentArr.forEach((e, i) => {e.date = dateArr[i]})
     return paymentArr
 }
 
-export const findProcessionData = (data, date) => {
-    const beforeTrans = data.filter(el => new Date(el.date) < date)
-    return beforeTrans.length
+// find position to insert rebate data
+export const findInsertPosition = (transArr, rebateUnixTime) => {
+    return transArr.findIndex((e, i) => e.date >= rebateUnixTime)
 }
 
-export const findlastValidBalance = (data, location) => {
-    let trans = {}
-    let validBalance = 0
-    if (!location) {
-        trans = data.find((element) => toFixed2(element.balance) > 0);
-        validBalance = Number(trans.balance) + Number(trans.capital)
+export const findlastValidBalance = (transArr, idx) => {
+    if (idx < 0) return
+    let lastIdx = transArr.findIndex((e, i) => toFixed2(e.balance) > 0 && i >= idx)
+    if (lastIdx > -1) {
+        const {_id, ...lastRecord} =  transArr[lastIdx]
+        return {currInterest: lastRecord.interest, lastBalance: Number(lastRecord.balance) + Number(lastRecord.capital)}
     } else {
-        trans = data.findLast((element, idx) => (element.description != 'deferredPayment') && idx < location);
-        validBalance = Number(trans.balance)
+        lastIdx = transArr.findLastIndex((e, i) => toFixed2(e.balance) > 0 && i < idx)
+        const {_id, ...lastRecord} =  transArr[lastIdx]
+        console.log("lastRecord 11 => ", lastRecord)
+        return {currInterest: Number(lastRecord.balance) * 0.29/frequencyObj[lastRecord.freq], lastBalance: Number(lastRecord.balance)}
     }
-    return validBalance
 }
 
-export const createInsertData = (status = '', lastBalance, orderNb, installAmount, date, transData) => {
-    let interest = toFixed2(Number(lastBalance) * 0.29/frequencyObj[transData.freq])
-    const freqName = freqOptions.find((freq) => freq.val == transData.freq)
-    let capital = Number(installAmount) -  Number(interest)
-    // contract.isCreditVariable ? capital -= transData.fees : ''
-    // if (capital +  Number(interest) > Number(lastBalance) || toFixed2(capital) < 0) {
-    //     return
-    // }
-    // let capital = Number(installAmount) -  Number(interest) - transData.fees
-    if (capital +  Number(interest) > Number(lastBalance)) {
-        return
-    }
-    let balance = lastBalance - capital
-    balance = balance < 0 ? 0 : balance
-    return Object.assign({}, transData, {
-        status: status,
-        orderNb: orderNb,
-        installAmount: installAmount,
-        date: date,
-        interest: toFixed2(interest),
-        capital: toFixed2(capital),
-        balance: toFixed2(balance),
+export const createInsertData = (orderNb, lastRecord, amount, date, status = '') => {
+    return Object.assign({}, lastRecord, {
+        status,
+        orderNb,
+        interest: lastRecord.currInterest,
+        capital: amount - lastRecord.currInterest,
+        balance: lastRecord.lastBalance - (amount - lastRecord.currInterest),
+        fees: 0,
+        setupAmount: amount,
+        date
     })
 }
 

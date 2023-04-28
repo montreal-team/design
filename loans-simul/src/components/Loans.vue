@@ -1,8 +1,8 @@
 <script setup>
-import { frequencyObj, timeReferenceObj, genTrans, getDDMMYYYYStr, freqOptions,  genDate, updateDateToTrans, findProcessionData,  findlastValidBalance, createInsertData, updateExistData, createNewData } from "../libs/helper"
+import { frequencyObj, timeReferenceObj, genTrans, getDDMMYYYYStr, freqOptions,  genDate, updateDateToTrans, findInsertPosition,  findlastValidBalance, createInsertData, updateExistData, createNewData, getUnixTime } from "../libs/helper"
 import { ref, reactive } from "vue"
 const count = ref(0)
-const headers = ["orderNb", "date", "installAmount", "interest", "capital", "fees", "balance", "status"]
+const headers = ["orderNb", "date", "setupAmount", "interest", "capital", "fees", "balance", "status"]
 const textheaders = ["nb", "date", "amount", "interest", "capital", "fees", "balance", "status"]
 let validateRebate = ref(false)
 const genParm = reactive({
@@ -39,14 +39,14 @@ let genDateArr = ref(
     })
 )
 
-let data = ref(genTrans({ totalsSeqNb: genParm.nb, amt: genParm.amt, fees: genParm.fees, freq: genParm.freq }))
+let data = ref(genTrans({ freq: genParm.freq, totalsSeqNb: genParm.nb, amt: genParm.amt, fees: genParm.fees}))
 data.value = updateDateToTrans(data.value, genDateArr.value)
 const onInit = () => {
     let trans = genTrans({
+        freq: genParm.freq,
         totalsSeqNb: genParm.nb,
         amt: genParm.amt,
-        fees: genParm.fees,
-        freq: genParm.freq,
+        fees: genParm.fees
     })
     genDateArr.value = genDate({
         freq: genParm.freq,
@@ -58,46 +58,44 @@ const onInit = () => {
     })
     data.value = updateDateToTrans(trans, genDateArr.value)
 }
-console.log(data.value)
 
-const addRebate = (rebateDate, rebateAmount, contractId = '') => {
-    //front end
-    const date = rebateDate
-    date.split("/")
-    let startD = parseInt(date.split("/")[0])
-    let startM = parseInt(date.split("/")[1])
-    let startY = parseInt(date.split("/")[2])
-    rebateDate = new Date(startY, startM - 1, startD, 12, 0, 0).getTime()
+const addRebate = (transArr, rebateDate, rebateAmount, contractId = '') => {
+    let rebateUnixTime = getUnixTime(rebateDate)
+    const insertPosIdx = findInsertPosition(transArr, rebateUnixTime)
+    if (insertPosIdx < 0) return
+    const lastRecord = findlastValidBalance(transArr, insertPosIdx)
+    console.log("lastRecord ==> ", lastRecord)
+    let createTrans = createInsertData(insertPosIdx + 1, lastRecord, rebateAmount, rebateUnixTime, 'rebate')
 
-    // //BE
-    const [...transArr] = data.value
-    const rebateLocation = findProcessionData(transArr, rebateDate)
-    const validBalance = findlastValidBalance(transArr, rebateLocation)
-    let createTrans = createInsertData(`rebate`, validBalance, rebateLocation + 1, rebateAmount, rebateDate, transArr[rebateLocation])
-    if (createTrans) {
-        // createTrans = await transactionServices.create(createTrans)
-        transArr.splice(rebateLocation , 0, createTrans)
-        let currBalance = findlastValidBalance(transArr , rebateLocation + 1)
-        let newTransArr = updateExistData(transArr, rebateLocation + 1, currBalance)
-        let deleteData = data.value.filter(el => !(newTransArr.find(tr => el._id == tr._id) || {})._id) || []
-        deleteData.forEach(el => { Object.assign(el, {deleted: true})})
-        data.value = newTransArr
-        // await transactionServices.updateMultiplesTransaction(newTransArr, {})
-        // await transactionServices.updateMultiplesTransaction(deleteData, {})
-        let totalOwing = 0
-        let currentBalance = 0
-        let rebate = 0
-        newTransArr.map((el) => {
-            if (el.status == 'rebate') {
-                rebate += Number(parseFloat(el.installAmount).toFixed(2))
-            }   
-            if (["pending", "inProgress"].includes(el.status)) {
-                    totalOwing += Number(parseFloat(el.installAmount).toFixed(2))
-                    currentBalance += Number(parseFloat(el.capital).toFixed(2))
-            } 
-        })
-        // await contractServices.updateById(contractId, { totalOwing: totalOwing, currentBalance: currentBalance, rebate: rebate })
-    } else { validateRebate.value = true }
+    console.log("createTrans ==> ", createTrans)
+    transArr.splice(insertPosIdx , 0, createTrans)
+    console.log("transArr ==> ", transArr)
+
+
+    // if (createTrans) {
+    //     // createTrans = await transactionServices.create(createTrans)
+    //     transArr.splice(rebateLocation , 0, createTrans)
+    //     let currBalance = findlastValidBalance(transArr , rebateLocation + 1)
+    //     let newTransArr = updateExistData(transArr, rebateLocation + 1, currBalance)
+    //     let deleteData = data.value.filter(el => !(newTransArr.find(tr => el._id == tr._id) || {})._id) || []
+    //     deleteData.forEach(el => { Object.assign(el, {deleted: true})})
+    //     data.value = newTransArr
+    //     // await transactionServices.updateMultiplesTransaction(newTransArr, {})
+    //     // await transactionServices.updateMultiplesTransaction(deleteData, {})
+    //     let totalOwing = 0
+    //     let currentBalance = 0
+    //     let rebate = 0
+    //     newTransArr.map((el) => {
+    //         if (el.status == 'rebate') {
+    //             rebate += Number(parseFloat(el.installAmount).toFixed(2))
+    //         }   
+    //         if (["pending", "inProgress"].includes(el.status)) {
+    //                 totalOwing += Number(parseFloat(el.installAmount).toFixed(2))
+    //                 currentBalance += Number(parseFloat(el.capital).toFixed(2))
+    //         } 
+    //     })
+    //     // await contractServices.updateById(contractId, { totalOwing: totalOwing, currentBalance: currentBalance, rebate: rebate })
+    // } else { validateRebate.value = true }
 }
 
 const revertRebate = (revertNumber, revertId) => {
@@ -176,7 +174,7 @@ const nsfByNumber = (number) => {
         <input type="mumber" ref="rebateAmount" class="border w-12" v-model="rebate.amount" />
         <label for="firstDate">rebate date</label>
         <input type="text" ref="rebateDate" class="border w-32" v-model="rebate.date" />
-        <button class="px-2 py-1 border bg-red-200" @click="addRebate(rebate.date, rebate.amount)">rebate</button>
+        <button class="px-2 py-1 border bg-red-200" @click="addRebate(data, rebate.date, rebate.amount)">rebate</button>
         <p v-if="validateRebate" style="color: red">error validate</p>
         <label for="province">revert  number</label>
         <input type="mumber" ref="rebateAmount" class="border w-12" v-model="revertNumber" />
