@@ -367,7 +367,6 @@ export const findlastValidBalance = (transArr, idx) => {
 }
 
 export const createInsertData = (orderNb, lastRecord, amount, date, status = '') => {
-    console.log("lastRecord => ", lastRecord)
     let interest = lastRecord.currInterest
     let capital = amount - interest;
     if (capital > lastRecord.lastBalance) {
@@ -518,11 +517,9 @@ export const initData = (freq, nb, amt, fees, firstDate, secondDate, startPayDat
 
 
 export const updateExistData = (transArr, fromIdx, lastBalance) => {
-    // let [...newTransArr] = transArr
     let balance = Number(lastBalance)
     let idx = fromIdx;
     while (toFixed2(balance) > 0) {
-        console.log("balance => ", balance)
         let trans = transArr[idx];
         let singleInt = 0.29/frequencyObj[trans.freq];
         let interest = Number(balance) * singleInt;
@@ -553,10 +550,8 @@ export const addNewRebate = async (transArr, rebateDate, rebateAmount, contractI
     const lastRecord = findlastValidBalance(transArr, insertPosIdx)
     let createTrans = createInsertData(insertPosIdx + 1, lastRecord, rebateAmount, rebateUnixTime, 'rebate')
     transArr.splice(insertPosIdx , 0, createTrans)
-    console.log("createTrans 1 = ", createTrans)
     if (createTrans) {
         if (createTrans.error) {
-            console.log("createTrans = ", createTrans)
             return {error: 'Error ...'}
         }
         // update folow trans
