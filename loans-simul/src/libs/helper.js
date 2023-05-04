@@ -295,6 +295,23 @@ export const genTrans = ({ intRate = 0.29, freq = '1w', fees = 0, totalsSeqNb = 
         let capital = amt - interest - fees
         balance = balance - capital
         balance = balance < 0 ? 0 : balance
+        if (idx == 2) {
+            trans.push(
+                Object.assign({}, commonData, {
+                    _id: idx,
+                    orderNb: idx,
+                    date: 0,
+                    freq,
+                    installAmount: amt, 
+                    setupAmount: 25,
+                    interest: 0,
+                    capital: 0,
+                    fees,
+                    balance: 0,
+                    status: "differ"
+                })
+            )
+        } else {
         trans.push(
             Object.assign({}, commonData, {
                 _id: idx,
@@ -310,6 +327,7 @@ export const genTrans = ({ intRate = 0.29, freq = '1w', fees = 0, totalsSeqNb = 
                 status: "in progess"
             })
         )
+        }
     }
     return trans
 }
@@ -353,7 +371,7 @@ export const findlastValidBalance = (transArr, idx) => {
         return {
             freq: lastRecord.freq,
             currInterest: lastRecord.interest, 
-            lastBalance: Number(lastRecord.balance) + Number(lastRecord.capital)
+            lastBalance: toFixed2( Number(lastRecord.balance) + Number(lastRecord.capital))
         }
     } else {
         lastIdx = transArr.findLastIndex((e, i) => toFixed2(e.balance) > 0 && i < idx)
@@ -367,133 +385,23 @@ export const findlastValidBalance = (transArr, idx) => {
 }
 
 export const createInsertData = (orderNb, lastRecord, amount, date, status = '') => {
-    let interest = lastRecord.currInterest
-    let capital = amount - interest;
-    if (capital > lastRecord.lastBalance) {
-        return {error: 'Error ....'}
+    let interest = Number(lastRecord.currInterest)
+    let capital = Number(amount) - interest;
+    if (capital > Number(lastRecord.lastBalance)) {
+        throw 'Error ....'
     }
     return Object.assign({}, lastRecord, {
         status,
         orderNb,
         freq: lastRecord.freq,
-        interest,
-        capital,
-        balance: lastRecord.lastBalance - capital,
+        interest: toFixed2(interest),
+        capital: toFixed2(capital),
+        balance: toFixed2(Number(lastRecord.lastBalance) - capital),
         fees: 0,
         setupAmount: amount,
         date
     })
 }
-
-// export const updateExistData = (transArr, updateLocation, currBalance) => {
-//     let [...newTransArr] = transArr
-//     newTransArr.forEach((el, idx) => {
-//         if (toFixed2(currBalance) > 0 && idx >= updateLocation) {
-//             // const freqName = frequencyArr.find((freq) => freq.val == el.freq)
-//             let installAmount = el.setupAmount
-//             let currInterest = Number(currBalance) * 0.29/frequencyObj[el.freq]
-//             let capital = Number(installAmount) - currInterest - el.fees
-//             // contract.isCreditVariable ? capital -= el.fees : ''
-//             // console.log(toFixed2(currBalance) < toFixed2(capital))
-//             if (Number(toFixed2(currBalance)) < Number(toFixed2(capital)) && el.status != 'stopPayment') {
-//                 capital = currBalance
-//                 currBalance = 0
-//                 installAmount = capital + currInterest + Number(el.fees)
-//             } else if (el.status != 'stopPayment') {
-//                 currBalance -=  capital
-//             }
-//             Object.assign(el, {
-//                 installAmount: toFixed2(installAmount),
-//                 interest: el.status != 'stopPayment' ? toFixed2(currInterest) : 0,
-//                 capital: el.status != 'stopPayment' ? toFixed2(capital) : 0,
-//                 balance: el.status != 'stopPayment' ? toFixed2(currBalance) : 0,
-//                 orderNb: idx + 1,
-//                 date: transArr[idx].date
-//             })
-//         } else if (toFixed2(currBalance) <= 0 && idx >= updateLocation && el.status != 'stopPayment') {
-//             newTransArr = newTransArr.filter(de => de._id != el._id)
-//         }
-//     })
-//     return newTransArr
-// }
-
-// export const createNewData = (lastPayment) => {
-//     let currBalance = lastPayment.balance
-//     let nextDate = lastPayment.date
-//     let newTransArr = []
-//     let nextOrderNb = lastPayment.orderNb + 1
-//     while(toFixed2(currBalance) > 0) {
-//         let installAmount = lastPayment.setupAmount
-//         let currInterest = Number(currBalance) * 0.29/frequencyObj[lastPayment.freq]
-//         let capital = Number(installAmount) - currInterest - lastPayment.fees
-//         if (Number(toFixed2(currBalance)) < Number(toFixed2(capital))) {
-//             capital = currBalance
-//             installAmount = Number(capital) + Number(currInterest) + Number(lastPayment.fees)
-//             currBalance = 0
-//         } else {
-//             currBalance -=  capital
-//         }
-//         nextDate = getOneTransDateFunc("2byM", lastPayment, 'qc', nextDate)
-//         newTransArr.push(Object.assign({}, lastPayment, {
-//             installAmount: toFixed2(installAmount),
-//             interest: toFixed2(currInterest),
-//             capital: toFixed2(capital),
-//             balance: toFixed2(currBalance),
-//             orderNb: nextOrderNb,
-//             date: nextDate,
-//             fees: 0
-//         }))
-//         nextOrderNb++
-//     }
-//     return newTransArr
-// }
-
-// const getOneTransDateFunc = (
-//     paymentFrequency = "",
-//     lastTrans = {},
-//     province,
-//     startDate = 0
-// ) => {
-//     let date = 0
-//     if (paymentFrequency == "2byM") {
-//         const firstDate = lastTrans.firstPayDate
-//         const secondDate = lastTrans.secondPayDate
-//         const openDate = new Date(startDate).getDate()
-//         const currDate = new Date(startDate)
-//         let newDate = 0
-//         let newMonth = currDate
-//         const lastDay = new Date(newMonth.getFullYear(), newMonth.getMonth() + 1, 0, 12, 0, 0)
-//         if (openDate < firstDate || openDate >= secondDate || openDate == lastDay.getDate()) {
-//             newDate = firstDate
-//         } else {
-//             newDate = secondDate
-//         }
-//         newDate > lastDay.getDate() ? (newDate = lastDay.getDate()) : ""
-//         date = new Date(new Date(newMonth).getFullYear(), new Date(newMonth).getMonth(), newDate, 12, 0, 0).getTime()
-//         let validDate = findValidDate(
-//             {
-//                 d: new Date(date).getDate(),
-//                 m: new Date(date).getMonth() + 1,
-//                 y: new Date(date).getFullYear(),
-//             },
-//             province
-//         )
-//         date = new Date(validDate.y, validDate.m - 1, validDate.d, 12, 0, 0).getTime()
-//     } else {
-//         const timeRef = timeReferenceObj
-//         date = startDate ? startDate : lastTrans.date + 86400 * timeRef[paymentFrequency] * 1000
-//         let validDate = findValidDate(
-//             {
-//                 d: new Date(date).getDate(),
-//                 m: new Date(date).getMonth() + 1,
-//                 y: new Date(date).getFullYear(),
-//             },
-//             province
-//         )
-//         date = new Date(validDate.y, validDate.m - 1, validDate.d, 12, 0, 0).getTime()
-//     }
-//     return date
-// }
 
 
 
@@ -516,72 +424,49 @@ export const initData = (freq, nb, amt, fees, firstDate, secondDate, startPayDat
 }
 
 
+
 export const updateExistData = (transArr, fromIdx, lastBalance) => {
     let balance = Number(lastBalance)
     let idx = fromIdx;
+    let tempRecord = {} // user for the case of new record, just get info from last valid record 
     while (toFixed2(balance) > 0) {
-        let trans = transArr[idx];
-        let singleInt = 0.29/frequencyObj[trans.freq];
-        let interest = Number(balance) * singleInt;
-        let setupAmount = Number(trans.setupAmount)
-        if (setupAmount - (interest + trans.fees) > balance) {
-            setupAmount = interest + trans.fees + balance
+        if (!transArr[idx]) {
+            transArr[idx] = tempRecord
         }
-        let capital = Number(setupAmount) - interest - trans.fees
-        balance -= capital
-        balance = balance < 0? 0: balance
-        Object.assign(transArr[idx], {
-            interest,
-            capital,
-            balance: toFixed2(balance),
-            orderNb: idx + 1,
-            date: transArr[idx].date
-        })
+        let trans = transArr[idx];
+        if(!(!toFixed2(trans.interest) && !toFixed2(trans.capital) && !toFixed2(trans.balance))) {
+            let singleInt = 0.29/frequencyObj[trans.freq];
+            let interest = Number(balance) * singleInt;
+            let setupAmount = Number(trans.setupAmount)
+            if (setupAmount - (interest + trans.fees) > balance) {
+                setupAmount = interest + trans.fees + balance
+            }
+            let capital = Number(setupAmount) - Number(interest) - Number(trans.fees)
+            balance -= capital
+            balance = balance < 0? 0: balance
+            Object.assign( transArr[idx], {
+                interest,
+                capital,
+                balance: toFixed2(balance),
+                orderNb: idx +1,
+                date: trans.date
+            })
+            Object.assign(tempRecord, transArr[idx])
+        }
         idx++
     }
     return transArr.slice(0, idx)
 }
 
-
+const insertRecord = (transArr, idx, newRecord) => {
+    transArr.splice(idx , 0, newRecord)
+}
 export const addNewRebate = async (transArr, rebateDate, rebateAmount, contractId = '') => {
     let rebateUnixTime = getUnixTime(rebateDate)
-    const insertPosIdx = findInsertPosition(transArr, rebateUnixTime)
-    if (insertPosIdx < 0) return {error: 'Error ...'}
-    const lastRecord = findlastValidBalance(transArr, insertPosIdx)
-    let createTrans = createInsertData(insertPosIdx + 1, lastRecord, rebateAmount, rebateUnixTime, 'rebate')
-    transArr.splice(insertPosIdx , 0, createTrans)
-    if (createTrans) {
-        if (createTrans.error) {
-            return {error: 'Error ...'}
-        }
-        // update folow trans
-        transArr = updateExistData([...transArr], insertPosIdx + 1, createTrans.balance)
-    }
-    return transArr
-
-
-    // if (createTrans) {
-    //     // createTrans = await transactionServices.create(createTrans)
-    //     transArr.splice(rebateLocation , 0, createTrans)
-    //     let currBalance = findlastValidBalance(transArr , rebateLocation + 1)
-    //     let newTransArr = updateExistData(transArr, rebateLocation + 1, currBalance)
-    //     let deleteData = data.value.filter(el => !(newTransArr.find(tr => el._id == tr._id) || {})._id) || []
-    //     deleteData.forEach(el => { Object.assign(el, {deleted: true})})
-    //     data.value = newTransArr
-    //     // await transactionServices.updateMultiplesTransaction(newTransArr, {})
-    //     // await transactionServices.updateMultiplesTransaction(deleteData, {})
-    //     let totalOwing = 0
-    //     let currentBalance = 0
-    //     let rebate = 0
-    //     newTransArr.map((el) => {
-    //         if (el.status == 'rebate') {
-    //             rebate += Number(parseFloat(el.installAmount).toFixed(2))
-    //         }   
-    //         if (["pending", "inProgress"].includes(el.status)) {
-    //                 totalOwing += Number(parseFloat(el.installAmount).toFixed(2))
-    //                 currentBalance += Number(parseFloat(el.capital).toFixed(2))
-    //         } 
-    //     })
-    //     // await contractServices.updateById(contractId, { totalOwing: totalOwing, currentBalance: currentBalance, rebate: rebate })
-    // } else { validateRebate.value = true }
+    const idx = findInsertPosition(transArr, rebateUnixTime)
+    if (idx < 0) throw 'Error ...'
+    const lastRecord = findlastValidBalance(transArr, idx)
+    let createTrans = createInsertData(idx + 1, lastRecord, rebateAmount, rebateUnixTime, 'rebate')
+    insertRecord(transArr, idx,createTrans)
+    return updateExistData([...transArr], idx + 1, createTrans.balance)
 }

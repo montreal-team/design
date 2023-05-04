@@ -73,7 +73,7 @@
 
 <script setup>
 import { initData, addNewRebate, getDDMMYYYYStr, freqOptions } from '../libs/helper'
-import { ref, reactive } from "vue";
+import { ref, reactive, toRaw } from "vue";
 
 let error = ref('')
 const count = ref(0)
@@ -115,39 +115,44 @@ onInit()
 
 async function onAddRebate(rebateDate, rebateAmount, contractId = '')  {
     error.value = ''
-    let result = await addNewRebate([...transArrCurr.value], rebateDate, rebateAmount, contractId = '');
-    if (result && result.error) {
-        error.value = result.error
-    }else {
-        transArrCurr.value = result
+    try {
+        let arr = transArrCurr.value.map(e => toRaw(e))
+        let result = await addNewRebate([...arr], rebateDate, rebateAmount, contractId = '');
+        console.log("result 11 => ", result)
+        if (result) {
+            console.log("result 22 => ", result)
+            transArrCurr.value = result
+        }
+    } catch (err) {
+        error.value = err
     }
 }
 
 
 const revertRebate = (revertNumber, revertId) => {
-    let [...transArr] = data.value
-    let newTransArr = []
-    const rebateIndex = transArr.findIndex(el => el.orderNb == revertNumber)
-    const validBalance = findlastValidBalance(transArr, rebateIndex)
-    transArr.splice(rebateIndex, 1)
-    newTransArr = updateExistData(transArr, rebateIndex, validBalance)
-    const lastPayment = newTransArr.findLast((element) => element.description != 'deferredPayment');
-    if (parseFloat(lastPayment.installAmount).toFixed(2) > 0) {
-        const newPayment = createNewData(lastPayment)
-        console.log(newTransArr)
-        newTransArr = newTransArr.concat(newPayment)
-    }
-    data.value = newTransArr
+    // let [...transArr] = data.value
+    // let newTransArr = []
+    // const rebateIndex = transArr.findIndex(el => el.orderNb == revertNumber)
+    // const validBalance = findlastValidBalance(transArr, rebateIndex)
+    // transArr.splice(rebateIndex, 1)
+    // newTransArr = updateExistData(transArr, rebateIndex, validBalance)
+    // const lastPayment = newTransArr.findLast((element) => element.description != 'deferredPayment');
+    // if (parseFloat(lastPayment.installAmount).toFixed(2) > 0) {
+    //     const newPayment = createNewData(lastPayment)
+    //     console.log(newTransArr)
+    //     newTransArr = newTransArr.concat(newPayment)
+    // }
+    // data.value = newTransArr
 }
 
 const nsfByNumber = (number) => {
-    let [...transArr] = data.value
-    const fine = 40
-    let objIndex = transArr.findIndex((obj => obj.orderNb == number));
-    const obj = transArr[objIndex]
-    Object.assign(transArr[objIndex], {installAmount: '0', interest: '0', capital: `-${fine + Number(obj.interest)}`, balance: `${Number(obj.balance) + fine + Number(obj.interest)}`})
-    console.log(objIndex)
-    let newTransArr = updateExistData(transArr, objIndex + 1, Number(obj.balance) + fine + Number(obj.interest))
-    data.value = newTransArr
+    // let [...transArr] = data.value
+    // const fine = 40
+    // let objIndex = transArr.findIndex((obj => obj.orderNb == number));
+    // const obj = transArr[objIndex]
+    // Object.assign(transArr[objIndex], {installAmount: '0', interest: '0', capital: `-${fine + Number(obj.interest)}`, balance: `${Number(obj.balance) + fine + Number(obj.interest)}`})
+    // console.log(objIndex)
+    // let newTransArr = updateExistData(transArr, objIndex + 1, Number(obj.balance) + fine + Number(obj.interest))
+    // data.value = newTransArr
 }
 </script>
