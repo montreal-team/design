@@ -490,6 +490,7 @@ const removeRecord = (transArr, idx) => {
     transArr.splice(idx , 1)
 }
 
+// add new rebate
 export const addNewRebate = async (transArr, rebateDate, rebateAmount, contractId = '') => {
     let rebateUnixTime = getUnixTime(rebateDate)
     const idx = findInsertPosition(transArr, rebateUnixTime)
