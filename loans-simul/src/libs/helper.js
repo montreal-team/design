@@ -291,10 +291,6 @@ export const genTrans = ({ intRate = 0.29, freq = '1w', fees = 0, totalsSeqNb = 
     let idx = 0
     while (toFixed2(balance) > 0) {
         idx++
-        // let interest = balance * singleInt
-        // let capital = amt - interest - fees
-        // balance = balance - capital
-        // balance = balance < 0 ? 0 : balance
         if (idx == 2) {
             trans.push(
                 Object.assign({}, commonData, {
@@ -312,25 +308,25 @@ export const genTrans = ({ intRate = 0.29, freq = '1w', fees = 0, totalsSeqNb = 
                 })
             )
         } else {
-        let interest = balance * singleInt
-        let capital = amt - interest - fees
-        balance = balance - capital
-        balance = balance < 0 ? 0 : balance
-        trans.push(
-            Object.assign({}, commonData, {
-                _id: idx,
-                orderNb: idx,
-                date: 0,
-                freq,
-                installAmount: amt, 
-                setupAmount: amt,
-                interest: toFixed2(interest),
-                capital: toFixed2(capital),
-                fees,
-                balance: toFixed2(balance),
-                status: "in progess"
-            })
-        )
+            let interest = balance * singleInt
+            let capital = amt - interest - fees
+            balance = balance - capital
+            balance = balance < 0 ? 0 : balance
+            trans.push(
+                Object.assign({}, commonData, {
+                    _id: idx,
+                    orderNb: idx,
+                    date: 0,
+                    freq,
+                    installAmount: amt, 
+                    setupAmount: amt,
+                    interest: toFixed2(interest),
+                    capital: toFixed2(capital),
+                    fees,
+                    balance: toFixed2(balance),
+                    status: "in progess"
+                })
+            )
         }
     }
     return trans
@@ -367,6 +363,7 @@ export const findInsertPosition = (transArr, rebateUnixTime) => {
     return transArr.findIndex((e, i) => e.date >= rebateUnixTime)
 }
 
+// find last valid record that is close to insert position
 export const findlastValidBalance = (transArr, idx) => {
     if (idx < 0) return
     let lastIdx = transArr.findIndex((e, i) => toFixed2(e.balance) > 0 && i >= idx)
@@ -388,6 +385,7 @@ export const findlastValidBalance = (transArr, idx) => {
     }
 }
 
+// create rebate record to insert
 export const createInsertData = (orderNb, lastRecord, amount, date, status = '') => {
     let interest = Number(lastRecord.currInterest)
     let capital = Number(amount) - interest;
@@ -408,8 +406,7 @@ export const createInsertData = (orderNb, lastRecord, amount, date, status = '')
     })
 }
 
-
-
+// generate transaction array when create contract
 export const initData = (freq, nb, amt, fees, firstDate, secondDate, startPayDate, province="Quebec") => {
     let transArr = genTrans({
         freq,
@@ -429,7 +426,7 @@ export const initData = (freq, nb, amt, fees, firstDate, secondDate, startPayDat
 }
 
 
-
+// update data after insert/remove rebate
 export const updateExistData = (transArr, fromIdx, lastBalance) => {
     let balance = Number(lastBalance)
     let idx = fromIdx;
