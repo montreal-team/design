@@ -107,6 +107,7 @@ let revertNumber = 0
 let transArrOrg = ref([])
 let transArrCurr = ref([...transArrOrg.value])
 const onInit = () => {
+    error.value = ''
     transArrOrg.value = initData(genParm.freq, genParm.nb, genParm.amt, genParm.fees, genParm.firstDate, genParm.secondDate, genParm.startPayDate, genParm.province)
     transArrCurr.value = [...transArrOrg.value]
 }

@@ -549,7 +549,7 @@ export const updateExistData = (transArr, fromIdx, lastBalance) => {
 export const addNewRebate = async (transArr, rebateDate, rebateAmount, contractId = '') => {
     let rebateUnixTime = getUnixTime(rebateDate)
     const insertPosIdx = findInsertPosition(transArr, rebateUnixTime)
-    if (insertPosIdx < 0) return {err: 'Error ...'}
+    if (insertPosIdx < 0) return {error: 'Error ...'}
     const lastRecord = findlastValidBalance(transArr, insertPosIdx)
     let createTrans = createInsertData(insertPosIdx + 1, lastRecord, rebateAmount, rebateUnixTime, 'rebate')
     transArr.splice(insertPosIdx , 0, createTrans)
