@@ -403,6 +403,7 @@ export const createInsertData = (orderNb, lastRecord, amount, date, status = '')
         balance: toFixed2(Number(lastRecord.lastBalance) - capital),
         fees: 0,
         setupAmount: amount,
+        installAmount: amount,
         date
     })
 }
@@ -434,21 +435,21 @@ export const updateExistData = (transArr, fromIdx, lastBalance) => {
     let idx = fromIdx;
     let tempRecord = {} // user for the case of new record, just get info from last valid record 
     while (toFixed2(balance) > 0) {
-        if (!transArr[idx]) {
-            transArr[idx] = tempRecord
-        }
         let trans = transArr[idx];
+        if (!trans) {
+            trans = tempRecord
+        }
         if(!(!toFixed2(trans.interest) && !toFixed2(trans.capital) && !toFixed2(trans.balance))) {
             let singleInt = 0.29/frequencyObj[trans.freq];
             let interest = Number(balance) * singleInt;
-            let setupAmount = Number(trans.setupAmount)
+            let setupAmount = Number(trans.installAmount) // install amount used for calculation.
             if (setupAmount - (interest + trans.fees) > balance) {
                 setupAmount = interest + trans.fees + balance
             }
             let capital = Number(setupAmount) - Number(interest) - Number(trans.fees)
             balance -= capital
             balance = balance < 0? 0: balance
-            Object.assign( transArr[idx], {
+            Object.assign( trans, {
                 setupAmount: toFixed2(setupAmount),
                 interest,
                 capital,
@@ -456,7 +457,7 @@ export const updateExistData = (transArr, fromIdx, lastBalance) => {
                 orderNb: idx +1,
                 date: trans.date
             })
-            Object.assign(tempRecord, transArr[idx])
+            Object.assign(tempRecord, trans)
         }
         idx++
     }
@@ -482,11 +483,6 @@ export const addNewRebate = async (transArr, rebateDate, rebateAmount, contractI
 
 export const revertRebate = async (transArr, idx) => {
     let rebateBalance = Number(transArr[idx].balance) + Number(transArr[idx].capital)
-    console.log('before ==> ', [...transArr])
-    console.log("rebateBalance => ",rebateBalance, idx)
     removeRecord(transArr, idx)
-    console.log('after =>  ', [...transArr])
-    
     return updateExistData([...transArr], idx, rebateBalance)
-    return transArr
 }
