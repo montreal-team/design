@@ -291,10 +291,10 @@ export const genTrans = ({ intRate = 0.29, freq = '1w', fees = 0, totalsSeqNb = 
     let idx = 0
     while (toFixed2(balance) > 0) {
         idx++
-        let interest = balance * singleInt
-        let capital = amt - interest - fees
-        balance = balance - capital
-        balance = balance < 0 ? 0 : balance
+        // let interest = balance * singleInt
+        // let capital = amt - interest - fees
+        // balance = balance - capital
+        // balance = balance < 0 ? 0 : balance
         if (idx == 2) {
             trans.push(
                 Object.assign({}, commonData, {
@@ -312,6 +312,10 @@ export const genTrans = ({ intRate = 0.29, freq = '1w', fees = 0, totalsSeqNb = 
                 })
             )
         } else {
+        let interest = balance * singleInt
+        let capital = amt - interest - fees
+        balance = balance - capital
+        balance = balance < 0 ? 0 : balance
         trans.push(
             Object.assign({}, commonData, {
                 _id: idx,
@@ -417,7 +421,7 @@ export const initData = (freq, nb, amt, fees, firstDate, secondDate, startPayDat
         firstDate,
         secondDate,
         startPayDate,
-        totalsSeqNb: nb,
+        totalsSeqNb: nb + 1,
         province,
     })
     return updateDateToTrans(transArr, dateArr)
@@ -445,6 +449,7 @@ export const updateExistData = (transArr, fromIdx, lastBalance) => {
             balance -= capital
             balance = balance < 0? 0: balance
             Object.assign( transArr[idx], {
+                setupAmount: toFixed2(setupAmount),
                 interest,
                 capital,
                 balance: toFixed2(balance),
@@ -461,6 +466,10 @@ export const updateExistData = (transArr, fromIdx, lastBalance) => {
 const insertRecord = (transArr, idx, newRecord) => {
     transArr.splice(idx , 0, newRecord)
 }
+const removeRecord = (transArr, idx) => {
+    transArr.splice(idx , 1)
+}
+
 export const addNewRebate = async (transArr, rebateDate, rebateAmount, contractId = '') => {
     let rebateUnixTime = getUnixTime(rebateDate)
     const idx = findInsertPosition(transArr, rebateUnixTime)
@@ -469,4 +478,15 @@ export const addNewRebate = async (transArr, rebateDate, rebateAmount, contractI
     let createTrans = createInsertData(idx + 1, lastRecord, rebateAmount, rebateUnixTime, 'rebate')
     insertRecord(transArr, idx,createTrans)
     return updateExistData([...transArr], idx + 1, createTrans.balance)
+}
+
+export const revertRebate = async (transArr, idx) => {
+    let rebateBalance = Number(transArr[idx].balance) + Number(transArr[idx].capital)
+    console.log('before ==> ', [...transArr])
+    console.log("rebateBalance => ",rebateBalance, idx)
+    removeRecord(transArr, idx)
+    console.log('after =>  ', [...transArr])
+    
+    return updateExistData([...transArr], idx, rebateBalance)
+    return transArr
 }

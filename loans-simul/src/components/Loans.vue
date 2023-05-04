@@ -58,7 +58,7 @@
     <div class="p-3 flex space-x-2 w-full justify-center items-center">
         <label for="province">revert  number</label>
         <input type="mumber" ref="rebateAmount" class="border w-12" v-model="revertNumber" />
-        <button class="px-2 py-1 border bg-red-200" @click="revertRebate(revertNumber)">revert rebate</button>
+        <button class="px-2 py-1 border bg-red-200" @click="onRevertRebate(revertNumber)">revert rebate</button>
     </div>
 
     <hr>
@@ -72,7 +72,7 @@
 
 
 <script setup>
-import { initData, addNewRebate, getDDMMYYYYStr, freqOptions } from '../libs/helper'
+import { initData, addNewRebate, revertRebate, getDDMMYYYYStr, freqOptions } from '../libs/helper'
 import { ref, reactive, toRaw } from "vue";
 
 let error = ref('')
@@ -118,9 +118,7 @@ async function onAddRebate(rebateDate, rebateAmount, contractId = '')  {
     try {
         let arr = transArrCurr.value.map(e => toRaw(e))
         let result = await addNewRebate([...arr], rebateDate, rebateAmount, contractId = '');
-        console.log("result 11 => ", result)
         if (result) {
-            console.log("result 22 => ", result)
             transArrCurr.value = result
         }
     } catch (err) {
@@ -128,8 +126,18 @@ async function onAddRebate(rebateDate, rebateAmount, contractId = '')  {
     }
 }
 
+const onRevertRebate = async (idx) => {
+    try {
+        let arr = transArrCurr.value.map(e => toRaw(e))
+        let result = await revertRebate([...arr], idx);
+        console.log("result ==> ", result)
+        if (result) {
+            transArrCurr.value = result
+        }
+    } catch (err) {
+        error.value = err
+    }
 
-const revertRebate = (revertNumber, revertId) => {
     // let [...transArr] = data.value
     // let newTransArr = []
     // const rebateIndex = transArr.findIndex(el => el.orderNb == revertNumber)
